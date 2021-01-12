@@ -16,5 +16,6 @@ public class Point {
     @Override
     public String toString() {
         return x + "," + y;
+        // TODO uncomment to see bottleneck disappears return (int) x + "," + (int) y;
     }
 }
