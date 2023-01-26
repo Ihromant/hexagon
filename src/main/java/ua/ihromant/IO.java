@@ -19,6 +19,7 @@ public final class IO {
     private static void getProxy(ReflectClass<?> cls) {
         if (!Metaprogramming.findClass(Serializable.class).isAssignableFrom(cls)) {
             Metaprogramming.unsupportedCase();
+            return;
         }
         var pr = Metaprogramming.proxy(Proxy.class, (instance, method, args) -> {
             String name = cls.getName();
