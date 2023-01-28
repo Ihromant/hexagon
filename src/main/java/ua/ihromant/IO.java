@@ -18,9 +18,8 @@ public final class IO {
     }
 
     private static Serializer proxyFor(Class<?> cls) {
-        String errorMessage = checkSupported(new CommonClassInfo(cls));
-        if (errorMessage != null) {
-            throw new IllegalArgumentException(errorMessage);
+        if (notSupported(new CommonClassInfo(cls))) {
+            throw new IllegalArgumentException("Not supported class " + cls.getName());
         }
         return getProxy(cls);
     }
@@ -28,21 +27,18 @@ public final class IO {
     @Meta
     private static native Serializer getProxy(Class<?> cls);
 
-    private static String checkSupported(ClassInfo cls) {
+    private static boolean notSupported(ClassInfo cls) {
         if (cls.isArray()) {
-            return null;
+            return false;
         }
         if (cls.assignableTo(Map.class)) {
-            return null;
+            return false;
         }
-        if (cls.assignableTo(Serializable.class)) {
-            return null;
-        }
-        return "Unsupported class " + cls.name();
+        return !cls.assignableTo(Serializable.class);
     }
 
     private static void getProxy(ReflectClass<?> cls) {
-        if (checkSupported(new ReflectClassInfo(cls)) != null) {
+        if (notSupported(new ReflectClassInfo(cls))) {
             Metaprogramming.unsupportedCase();
             return;
         }
