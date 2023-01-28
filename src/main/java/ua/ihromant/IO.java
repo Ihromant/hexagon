@@ -18,7 +18,7 @@ public final class IO {
     }
 
     private static Serializer proxyFor(Class<?> cls) {
-        String errorMessage = checkValidity(new CommonClassInfo(cls));
+        String errorMessage = checkSupported(new CommonClassInfo(cls));
         if (errorMessage != null) {
             throw new IllegalArgumentException(errorMessage);
         }
@@ -28,7 +28,7 @@ public final class IO {
     @Meta
     private static native Serializer getProxy(Class<?> cls);
 
-    private static String checkValidity(ClassInfo cls) {
+    private static String checkSupported(ClassInfo cls) {
         if (cls.isArray()) {
             return null;
         }
@@ -42,7 +42,7 @@ public final class IO {
     }
 
     private static void getProxy(ReflectClass<?> cls) {
-        if (checkValidity(new ReflectClassInfo(cls)) != null) {
+        if (checkSupported(new ReflectClassInfo(cls)) != null) {
             Metaprogramming.unsupportedCase();
             return;
         }
