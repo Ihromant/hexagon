@@ -9,7 +9,9 @@ import ua.ihromant.cls.CommonClassInfo;
 import ua.ihromant.cls.ReflectClassInfo;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @CompileTime
 public final class IO {
@@ -18,7 +20,7 @@ public final class IO {
     }
 
     private static Serializer proxyFor(Class<?> cls) {
-        if (notSupported(new CommonClassInfo(cls))) {
+        if (blackList(new CommonClassInfo(cls))) {
             throw new IllegalArgumentException("Not supported class " + cls.getName());
         }
         return getProxy(cls);
@@ -27,18 +29,25 @@ public final class IO {
     @Meta
     private static native Serializer getProxy(Class<?> cls);
 
-    private static boolean notSupported(ClassInfo cls) {
+    private static boolean blackList(ClassInfo cls) {
         if (cls.isArray()) {
             return false;
         }
         if (cls.assignableTo(Map.class)) {
             return false;
         }
+        if (cls.assignableTo(List.class)) {
+            return false;
+        }
+        if (cls.assignableTo(Set.class)) {
+            return false;
+        }
         return !cls.assignableTo(Serializable.class);
     }
 
     private static void getProxy(ReflectClass<?> cls) {
-        if (notSupported(new ReflectClassInfo(cls))) {
+        if (blackList(new ReflectClassInfo(cls))) {
+            //Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Class " + cls.getName() + " not supported");
             Metaprogramming.unsupportedCase();
             return;
         }
