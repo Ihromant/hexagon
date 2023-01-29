@@ -43,9 +43,6 @@ public final class IO {
         return getProxy(cls);
     }
 
-    @Meta
-    private static native Serializer getProxy(Class<?> cls);
-
     private static boolean blackList(ClassInfo cls) {
         if (cls.assignableTo(IsSerializable.class)) {
             return false;
@@ -62,12 +59,11 @@ public final class IO {
         if (cls.assignableTo(List.class)) {
             return false;
         }
-        if (cls.assignableTo(Set.class)) {
-            return false;
-        }
-        return cls.isInterface();
+        return !cls.assignableTo(Set.class);
     }
 
+    @Meta
+    private static native Serializer getProxy(Class<?> cls);
     private static void getProxy(ReflectClass<?> cls) {
         ReflectClassInfo info = new ReflectClassInfo(cls);
         if (blackList(new ReflectClassInfo(cls))) {
