@@ -50,6 +50,12 @@ public final class IO {
         if (cls.isArray()) {
             return false;
         }
+        if (cls.isEnum()) {
+            return false;
+        }
+        if (cls.isPrimitive()) {
+            return false;
+        }
         if (cls.assignableTo(Map.class)) {
             return false;
         }

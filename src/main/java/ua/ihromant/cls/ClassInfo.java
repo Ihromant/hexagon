@@ -5,6 +5,8 @@ public interface ClassInfo {
 
     boolean isEnum();
 
+    boolean isPrimitive();
+
     boolean isArray();
 
     String name();

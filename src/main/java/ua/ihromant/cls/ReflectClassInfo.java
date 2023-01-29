@@ -23,6 +23,11 @@ public class ReflectClassInfo implements ClassInfo {
     }
 
     @Override
+    public boolean isPrimitive() {
+        return cls.isPrimitive();
+    }
+
+    @Override
     public boolean isArray() {
         return cls.isArray();
     }
