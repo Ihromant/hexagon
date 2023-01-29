@@ -13,6 +13,11 @@ public class CommonClassInfo implements ClassInfo {
     }
 
     @Override
+    public boolean isInterface() {
+        return cls.isInterface();
+    }
+
+    @Override
     public boolean isEnum() {
         return false;
     }

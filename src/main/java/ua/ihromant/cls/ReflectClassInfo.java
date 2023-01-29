@@ -18,6 +18,11 @@ public class ReflectClassInfo implements ClassInfo {
     }
 
     @Override
+    public boolean isInterface() {
+        return cls.isInterface();
+    }
+
+    @Override
     public boolean isEnum() {
         return cls.isEnum();
     }
