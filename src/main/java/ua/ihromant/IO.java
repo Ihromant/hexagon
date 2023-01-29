@@ -11,9 +11,13 @@ import ua.ihromant.cls.ClassInfo;
 import ua.ihromant.cls.CommonClassInfo;
 import ua.ihromant.cls.ReflectClassInfo;
 import ua.ihromant.deserializers.Deserializer;
+import ua.ihromant.serializers.BooleanSerializer;
+import ua.ihromant.serializers.DoubleSerializer;
+import ua.ihromant.serializers.IntSerializer;
 import ua.ihromant.serializers.Serializer;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +25,10 @@ import java.util.Set;
 
 @CompileTime
 public final class IO {
+    private static final String BOOLEAN = "boolean";
+    private static final String INT = "int";
+    private static final String DOUBLE = "double";
+    private static final List<String> SUPPORTED = Arrays.asList(BOOLEAN, INT, DOUBLE);
     private static final Map<Class<?>, Serializer> serializers = new IdentityHashMap<>();
     private static final Map<Class<?>, Deserializer> deserializers = new IdentityHashMap<>();
 
@@ -50,7 +58,7 @@ public final class IO {
             return false;
         }
         if (cls.isPrimitive()) {
-            return false;
+            return !SUPPORTED.contains(cls.name());
         }
         if (cls.assignableTo(Map.class)) {
             return false;
@@ -70,6 +78,7 @@ public final class IO {
             Metaprogramming.unsupportedCase();
             return;
         }
+        Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), cls.getName());
         Value<Serializer> serializer = getSerializer(info);
         Metaprogramming.exit(() -> serializer.get());
     }
@@ -95,13 +104,20 @@ public final class IO {
                     return target;
                 });
             });
-        } else {
-            return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
-                //cls.getFields()[0].getType()
-                String name = info.name();
-                Metaprogramming.exit(() -> null);
-            });
         }
+        if (info.isPrimitive()) {
+            switch (info.name()) {
+                case BOOLEAN: return Metaprogramming.emit(() -> BooleanSerializer.INSTANCE);
+                case INT: return Metaprogramming.emit(() -> IntSerializer.INSTANCE);
+                case DOUBLE: return Metaprogramming.emit(() -> DoubleSerializer.INSTANCE);
+                //default: Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Tried to serialize unsupported primitive " + info.name());
+            }
+        }
+        return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
+            //cls.getFields()[0].getType()
+            String name = info.name();
+            Metaprogramming.exit(() -> null);
+        });
     }
 
     static class Abc implements Serializable {
