@@ -1,14 +1,16 @@
 package ua.ihromant.cls;
 
-import lombok.RequiredArgsConstructor;
 import org.teavm.metaprogramming.CompileTime;
 import org.teavm.metaprogramming.Metaprogramming;
 import org.teavm.metaprogramming.ReflectClass;
 
 @CompileTime
-@RequiredArgsConstructor
 public class ReflectClassInfo implements ClassInfo {
     private final ReflectClass<?> cls;
+
+    public ReflectClassInfo(ReflectClass<?> cls) {
+        this.cls = cls;
+    }
 
     @Override
     public boolean assignableTo(Class<?> other) {

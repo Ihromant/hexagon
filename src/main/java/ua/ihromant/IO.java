@@ -1,8 +1,8 @@
 package ua.ihromant;
 
 import org.teavm.jso.JSObject;
+import org.teavm.jso.core.JSArray;
 import org.teavm.metaprogramming.CompileTime;
-import org.teavm.metaprogramming.Diagnostics;
 import org.teavm.metaprogramming.Meta;
 import org.teavm.metaprogramming.Metaprogramming;
 import org.teavm.metaprogramming.ReflectClass;
@@ -18,6 +18,10 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.teavm.metaprogramming.Metaprogramming.emit;
+import static org.teavm.metaprogramming.Metaprogramming.exit;
+import static org.teavm.metaprogramming.Metaprogramming.proxy;
 
 @CompileTime
 public final class IO {
@@ -74,7 +78,19 @@ public final class IO {
             if (childSerializer == null) {
                 Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No serializer for " + childClass.getName());
             }
-            return null;
+            return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
+                Value<Object> value = args[0];
+                exit(() -> {
+                    JSArray<JSObject> target = JSArray.create();
+                    int sz = cls.getArrayLength(value.get());
+                    Serializer itemSerializer = childSerializer.get();
+                    for (int i = 0; i < sz; ++i) {
+                        Object component = cls.getArrayElement(value.get(), i);
+                        target.push(itemSerializer.write(component));
+                    }
+                    return target;
+                });
+            });
         } else {
             return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
                 //cls.getFields()[0].getType()

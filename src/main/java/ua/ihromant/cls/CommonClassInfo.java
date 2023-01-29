@@ -1,10 +1,11 @@
 package ua.ihromant.cls;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
 public class CommonClassInfo implements ClassInfo {
     private final Class<?> cls;
+
+    public CommonClassInfo(Class<?> cls) {
+        this.cls = cls;
+    }
 
     @Override
     public boolean assignableTo(Class<?> other) {
