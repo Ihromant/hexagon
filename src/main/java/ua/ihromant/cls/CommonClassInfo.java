@@ -33,6 +33,11 @@ public class CommonClassInfo implements ClassInfo {
     }
 
     @Override
+    public ClassInfo componentType() {
+        return new CommonClassInfo(cls.getComponentType());
+    }
+
+    @Override
     public String name() {
         return cls.getName();
     }

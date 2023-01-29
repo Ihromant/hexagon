@@ -10,15 +10,13 @@ import org.teavm.metaprogramming.Value;
 import ua.ihromant.cls.ClassInfo;
 import ua.ihromant.cls.CommonClassInfo;
 import ua.ihromant.cls.ReflectClassInfo;
-import ua.ihromant.deserializers.Deserializer;
 import ua.ihromant.serializers.BooleanSerializer;
 import ua.ihromant.serializers.DoubleSerializer;
+import ua.ihromant.serializers.EnumSerializer;
 import ua.ihromant.serializers.IntSerializer;
 import ua.ihromant.serializers.Serializer;
 
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,8 +27,6 @@ public final class IO {
     private static final String INT = "int";
     private static final String DOUBLE = "double";
     private static final List<String> SUPPORTED = Arrays.asList(BOOLEAN, INT, DOUBLE);
-    private static final Map<Class<?>, Serializer> serializers = new IdentityHashMap<>();
-    private static final Map<Class<?>, Deserializer> deserializers = new IdentityHashMap<>();
 
     static {
 
@@ -51,11 +47,11 @@ public final class IO {
     private static native Serializer getProxy(Class<?> cls);
 
     private static boolean blackList(ClassInfo cls) {
-        if (cls.isArray()) {
+        if (cls.assignableTo(IsSerializable.class)) {
             return false;
         }
-        if (cls.isEnum()) {
-            return false;
+        if (cls.isArray()) {
+            return blackList(cls.componentType());
         }
         if (cls.isPrimitive()) {
             return !SUPPORTED.contains(cls.name());
@@ -69,7 +65,7 @@ public final class IO {
         if (cls.assignableTo(Set.class)) {
             return false;
         }
-        return !cls.assignableTo(Serializable.class);
+        return cls.isInterface();
     }
 
     private static void getProxy(ReflectClass<?> cls) {
@@ -85,7 +81,7 @@ public final class IO {
 
     private static Value<Serializer> getSerializer(ReflectClassInfo info) {
         if (info.isArray()) {
-            ReflectClassInfo elementInfo = info.elementInfo();
+            ReflectClassInfo elementInfo = info.componentType();
             Value<Serializer> childSerializer = getSerializer(elementInfo);
             if (childSerializer == null) {
                 Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No serializer for " + elementInfo.name());
@@ -105,12 +101,18 @@ public final class IO {
                 });
             });
         }
+        if (info.assignableTo(List.class)) {
+
+        }
+        if (info.isEnum()) {
+            return Metaprogramming.emit(() -> EnumSerializer.INSTANCE);
+        }
         if (info.isPrimitive()) {
             switch (info.name()) {
                 case BOOLEAN: return Metaprogramming.emit(() -> BooleanSerializer.INSTANCE);
                 case INT: return Metaprogramming.emit(() -> IntSerializer.INSTANCE);
                 case DOUBLE: return Metaprogramming.emit(() -> DoubleSerializer.INSTANCE);
-                //default: Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Tried to serialize unsupported primitive " + info.name());
+                default: Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Tried to serialize unsupported primitive " + info.name());
             }
         }
         return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
@@ -120,13 +122,13 @@ public final class IO {
         });
     }
 
-    static class Abc implements Serializable {
+    static class Abc implements IsSerializable {
         String foo() {
             return "qwe";
         }
     }
 
-    static class Def implements Serializable {
+    static class Def implements IsSerializable {
         String bar() {
             return "qwe";
         }

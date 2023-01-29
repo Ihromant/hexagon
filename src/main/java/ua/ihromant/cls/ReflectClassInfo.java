@@ -37,7 +37,8 @@ public class ReflectClassInfo implements ClassInfo {
         return cls.isArray();
     }
 
-    public ReflectClassInfo elementInfo() {
+    @Override
+    public ReflectClassInfo componentType() {
         if (!isArray()) {
             Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Asking for element info of not array");
             return null;

@@ -11,5 +11,7 @@ public interface ClassInfo {
 
     boolean isArray();
 
+    ClassInfo componentType();
+
     String name();
 }
