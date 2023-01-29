@@ -63,21 +63,23 @@ public final class IO {
     }
 
     private static void getProxy(ReflectClass<?> cls) {
+        ReflectClassInfo info = new ReflectClassInfo(cls);
         if (blackList(new ReflectClassInfo(cls))) {
             Metaprogramming.unsupportedCase();
             return;
         }
-        Value<Serializer> serializer = getSerializer(cls);
+        Value<Serializer> serializer = getSerializer(info);
         Metaprogramming.exit(() -> serializer.get());
     }
 
-    private static Value<Serializer> getSerializer(ReflectClass<?> cls) {
-        if (cls.isArray()) {
-            ReflectClass<?> childClass = cls.getComponentType();
-            Value<Serializer> childSerializer = getSerializer(childClass);
+    private static Value<Serializer> getSerializer(ReflectClassInfo info) {
+        if (info.isArray()) {
+            ReflectClassInfo elementInfo = info.elementInfo();
+            Value<Serializer> childSerializer = getSerializer(elementInfo);
             if (childSerializer == null) {
-                Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No serializer for " + childClass.getName());
+                Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No serializer for " + elementInfo.name());
             }
+            ReflectClass<?> cls = info.unwrap();
             return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
                 Value<Object> value = args[0];
                 exit(() -> {
@@ -94,7 +96,7 @@ public final class IO {
         } else {
             return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
                 //cls.getFields()[0].getType()
-                String name = cls.getName();
+                String name = info.name();
                 Metaprogramming.exit(() -> null);
             });
         }
