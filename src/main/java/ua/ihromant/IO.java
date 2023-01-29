@@ -7,21 +7,17 @@ import org.teavm.metaprogramming.Meta;
 import org.teavm.metaprogramming.Metaprogramming;
 import org.teavm.metaprogramming.ReflectClass;
 import org.teavm.metaprogramming.Value;
-import org.teavm.metaprogramming.reflect.ReflectField;
 import ua.ihromant.cls.ClassInfo;
 import ua.ihromant.cls.CommonClassInfo;
 import ua.ihromant.cls.ReflectClassInfo;
+import ua.ihromant.deserializers.Deserializer;
+import ua.ihromant.serializers.Serializer;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.teavm.metaprogramming.Metaprogramming.emit;
-import static org.teavm.metaprogramming.Metaprogramming.exit;
-import static org.teavm.metaprogramming.Metaprogramming.proxy;
 
 @CompileTime
 public final class IO {
@@ -88,7 +84,7 @@ public final class IO {
             ReflectClass<?> cls = info.unwrap();
             return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
                 Value<Object> value = args[0];
-                exit(() -> {
+                Metaprogramming.exit(() -> {
                     JSArray<JSObject> target = JSArray.create();
                     int sz = cls.getArrayLength(value.get());
                     Serializer itemSerializer = childSerializer.get();
@@ -106,14 +102,6 @@ public final class IO {
                 Metaprogramming.exit(() -> null);
             });
         }
-    }
-
-    private interface Serializer {
-        JSObject write(Object object);
-    }
-
-    private interface Deserializer {
-        Object read(JSObject data);
     }
 
     static class Abc implements Serializable {
