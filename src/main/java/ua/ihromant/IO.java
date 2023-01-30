@@ -44,22 +44,16 @@ public final class IO {
     }
 
     private static boolean blackList(ClassInfo cls) {
+        if (cls.isInterface()) {
+            return true;
+        }
         if (cls.assignableTo(IsSerializable.class)) {
             return false;
         }
         if (cls.isArray()) {
             return blackList(cls.componentType());
         }
-        if (cls.isPrimitive()) {
-            return !SUPPORTED.contains(cls.name());
-        }
-        if (cls.assignableTo(Map.class)) {
-            return false;
-        }
-        if (cls.assignableTo(List.class)) {
-            return false;
-        }
-        return !cls.assignableTo(Set.class);
+        return !cls.isPrimitive() || !SUPPORTED.contains(cls.name());
     }
 
     @Meta
