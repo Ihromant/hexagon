@@ -117,7 +117,7 @@ public final class IO {
             boolean b = info.isPrimitive();
             //cls.getFields()[0].getType()
             String name = info.name();
-            Metaprogramming.exit(() -> b ? JSString.valueOf("Abc") : JSNumber.valueOf(1));
+            Metaprogramming.exit(() -> b ? JSNumber.valueOf(1) : JSString.valueOf(name));
         });
     }
 
