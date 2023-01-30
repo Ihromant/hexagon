@@ -2,6 +2,8 @@ package ua.ihromant;
 
 import org.teavm.jso.JSObject;
 import org.teavm.jso.core.JSArray;
+import org.teavm.jso.core.JSNumber;
+import org.teavm.jso.core.JSString;
 import org.teavm.jso.json.JSON;
 import org.teavm.metaprogramming.CompileTime;
 import org.teavm.metaprogramming.Meta;
@@ -112,9 +114,10 @@ public final class IO {
 
     private static Value<Serializer> objectSerializer(ReflectClassInfo info) {
         return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
+            boolean b = info.isPrimitive();
             //cls.getFields()[0].getType()
             String name = info.name();
-            Metaprogramming.exit(() -> null);
+            Metaprogramming.exit(() -> b ? JSString.valueOf("Abc") : JSNumber.valueOf(1));
         });
     }
 
