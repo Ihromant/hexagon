@@ -2,6 +2,7 @@ package ua.ihromant;
 
 import org.teavm.jso.JSObject;
 import org.teavm.jso.core.JSArray;
+import org.teavm.jso.json.JSON;
 import org.teavm.metaprogramming.CompileTime;
 import org.teavm.metaprogramming.Meta;
 import org.teavm.metaprogramming.Metaprogramming;
@@ -10,10 +11,6 @@ import org.teavm.metaprogramming.Value;
 import ua.ihromant.cls.ClassInfo;
 import ua.ihromant.cls.CommonClassInfo;
 import ua.ihromant.cls.ReflectClassInfo;
-import ua.ihromant.serializers.BooleanSerializer;
-import ua.ihromant.serializers.DoubleSerializer;
-import ua.ihromant.serializers.EnumSerializer;
-import ua.ihromant.serializers.IntSerializer;
 import ua.ihromant.serializers.Serializer;
 
 @CompileTime
@@ -22,12 +19,12 @@ public final class IO {
     private static final String INT = "int";
     private static final String DOUBLE = "double";
 
-    static {
+    private IO() {
 
     }
 
-    private IO() {
-
+    public static String write(Object o) {
+        return JSON.stringify(proxyFor(o.getClass()).write(o));
     }
 
     private static Serializer proxyFor(Class<?> cls) {
@@ -53,12 +50,26 @@ public final class IO {
             return;
         }
         Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), cls.getName());
-        Value<Serializer> serializer = objectSerializer(info); // TODO later here should be generic serializer
+        Value<Serializer> serializer = genericSerializer(info); // TODO later here should be generic serializer
         Metaprogramming.exit(() -> serializer.get());
     }
 
     private static Value<Serializer> genericSerializer(ReflectClassInfo info) {
-        return null;
+        if (info.isArray()) {
+            return arraySerializer(info);
+        }
+        if (info.isEnum()) {
+            return enumSerializer();
+        }
+        if (info.isPrimitive()) {
+            return primitiveSerializer(info);
+        }
+        //ReflectClass<?> rc = null;
+        //ReflectField[] fds = rc.getFields();
+        //for (ReflectField rf : fds) {
+
+        //}
+        return objectSerializer(info);
     }
 
     private static Value<Serializer> arraySerializer(ReflectClassInfo info) {
@@ -84,14 +95,14 @@ public final class IO {
     }
 
     private static Value<Serializer> enumSerializer() {
-        return Metaprogramming.emit(() -> EnumSerializer.INSTANCE);
+        return Metaprogramming.emit(() -> Serializer.ENUM);
     }
 
     private static Value<Serializer> primitiveSerializer(ReflectClassInfo info) {
         switch (info.name()) {
-            case BOOLEAN: return Metaprogramming.emit(() -> BooleanSerializer.INSTANCE);
-            case INT: return Metaprogramming.emit(() -> IntSerializer.INSTANCE);
-            case DOUBLE: return Metaprogramming.emit(() -> DoubleSerializer.INSTANCE);
+            case BOOLEAN: return Metaprogramming.emit(() -> Serializer.BOOLEAN);
+            case INT: return Metaprogramming.emit(() -> Serializer.INT);
+            case DOUBLE: return Metaprogramming.emit(() -> Serializer.DOUBLE);
             default: {
                 Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Tried to serialize unsupported primitive " + info.name());
                 return null;
@@ -113,7 +124,8 @@ public final class IO {
         }
     }
 
-    static class Def implements IsSerializable {
+    enum Def implements IsSerializable {
+        A, B, C;
         String bar() {
             return "qwe";
         }
@@ -126,9 +138,9 @@ public final class IO {
     }
 
     public static void debug() {
+        var b = Def.A;
+        System.out.println(IO.write(b));
         var a = new Abc();
-        System.out.println(proxyFor(a.getClass()).write(a));
-        var b = new Ghi();
-        System.out.println(proxyFor(b.getClass()).write(b));
+        System.out.println(IO.write(a));
     }
 }
