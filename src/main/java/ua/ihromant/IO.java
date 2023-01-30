@@ -16,17 +16,11 @@ import ua.ihromant.serializers.EnumSerializer;
 import ua.ihromant.serializers.IntSerializer;
 import ua.ihromant.serializers.Serializer;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 @CompileTime
 public final class IO {
     private static final String BOOLEAN = "boolean";
     private static final String INT = "int";
     private static final String DOUBLE = "double";
-    private static final List<String> SUPPORTED = Arrays.asList(BOOLEAN, INT, DOUBLE);
 
     static {
 
@@ -47,13 +41,7 @@ public final class IO {
         if (cls.isInterface()) {
             return true;
         }
-        if (cls.assignableTo(IsSerializable.class)) {
-            return false;
-        }
-        if (cls.isArray()) {
-            return blackList(cls.componentType());
-        }
-        return !cls.isPrimitive() || !SUPPORTED.contains(cls.name());
+        return !cls.assignableTo(IsSerializable.class);
     }
 
     @Meta
@@ -65,46 +53,53 @@ public final class IO {
             return;
         }
         Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), cls.getName());
-        Value<Serializer> serializer = getSerializer(info);
+        Value<Serializer> serializer = objectSerializer(info); // TODO later here should be generic serializer
         Metaprogramming.exit(() -> serializer.get());
     }
 
-    private static Value<Serializer> getSerializer(ReflectClassInfo info) {
-        if (info.isArray()) {
-            ReflectClassInfo elementInfo = info.componentType();
-            Value<Serializer> childSerializer = getSerializer(elementInfo);
-            if (childSerializer == null) {
-                Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No serializer for " + elementInfo.name());
-            }
-            ReflectClass<?> cls = info.unwrap();
-            return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
-                Value<Object> value = args[0];
-                Metaprogramming.exit(() -> {
-                    JSArray<JSObject> target = JSArray.create();
-                    int sz = cls.getArrayLength(value.get());
-                    Serializer itemSerializer = childSerializer.get();
-                    for (int i = 0; i < sz; ++i) {
-                        Object component = cls.getArrayElement(value.get(), i);
-                        target.push(itemSerializer.write(component));
-                    }
-                    return target;
-                });
-            });
-        }
-        if (info.assignableTo(List.class)) {
+    private static Value<Serializer> genericSerializer(ReflectClassInfo info) {
+        return null;
+    }
 
+    private static Value<Serializer> arraySerializer(ReflectClassInfo info) {
+        ReflectClassInfo elementInfo = info.componentType();
+        Value<Serializer> childSerializer = genericSerializer(elementInfo);
+        if (childSerializer == null) {
+            Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No serializer for " + elementInfo.name());
         }
-        if (info.isEnum()) {
-            return Metaprogramming.emit(() -> EnumSerializer.INSTANCE);
-        }
-        if (info.isPrimitive()) {
-            switch (info.name()) {
-                case BOOLEAN: return Metaprogramming.emit(() -> BooleanSerializer.INSTANCE);
-                case INT: return Metaprogramming.emit(() -> IntSerializer.INSTANCE);
-                case DOUBLE: return Metaprogramming.emit(() -> DoubleSerializer.INSTANCE);
-                default: Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Tried to serialize unsupported primitive " + info.name());
+        ReflectClass<?> cls = info.unwrap();
+        return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
+            Value<Object> value = args[0];
+            Metaprogramming.exit(() -> {
+                JSArray<JSObject> target = JSArray.create();
+                int sz = cls.getArrayLength(value.get());
+                Serializer itemSerializer = childSerializer.get();
+                for (int i = 0; i < sz; ++i) {
+                    Object component = cls.getArrayElement(value.get(), i);
+                    target.push(itemSerializer.write(component));
+                }
+                return target;
+            });
+        });
+    }
+
+    private static Value<Serializer> enumSerializer() {
+        return Metaprogramming.emit(() -> EnumSerializer.INSTANCE);
+    }
+
+    private static Value<Serializer> primitiveSerializer(ReflectClassInfo info) {
+        switch (info.name()) {
+            case BOOLEAN: return Metaprogramming.emit(() -> BooleanSerializer.INSTANCE);
+            case INT: return Metaprogramming.emit(() -> IntSerializer.INSTANCE);
+            case DOUBLE: return Metaprogramming.emit(() -> DoubleSerializer.INSTANCE);
+            default: {
+                Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Tried to serialize unsupported primitive " + info.name());
+                return null;
             }
         }
+    }
+
+    private static Value<Serializer> objectSerializer(ReflectClassInfo info) {
         return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
             //cls.getFields()[0].getType()
             String name = info.name();
