@@ -14,6 +14,7 @@ import ua.ihromant.cls.ClassInfo;
 import ua.ihromant.cls.CommonClassInfo;
 import ua.ihromant.cls.ReflectClassInfo;
 import ua.ihromant.serializers.Serializer;
+import ua.ihromant.tree.ReflectInfoCache;
 
 @CompileTime
 public final class IO {
@@ -71,7 +72,7 @@ public final class IO {
         //for (ReflectField rf : fds) {
 
         //}
-        return objectSerializer(info);
+        return ReflectInfoCache.INSTANCE.getSerializer(info);
     }
 
     private static Value<Serializer> arraySerializer(ReflectClassInfo info) {
@@ -110,15 +111,6 @@ public final class IO {
                 return null;
             }
         }
-    }
-
-    private static Value<Serializer> objectSerializer(ReflectClassInfo info) {
-        return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
-            boolean b = info.isPrimitive();
-            //cls.getFields()[0].getType()
-            String name = info.name();
-            Metaprogramming.exit(() -> b ? JSNumber.valueOf(1) : JSString.valueOf(name));
-        });
     }
 
     static class Abc implements IsSerializable {
