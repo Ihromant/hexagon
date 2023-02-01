@@ -2,18 +2,12 @@ package ua.ihromant.tree;
 
 import org.teavm.jso.JSObject;
 import org.teavm.jso.core.JSMapLike;
-import org.teavm.jso.core.JSNumber;
 import org.teavm.jso.core.JSObjects;
-import org.teavm.jso.core.JSString;
 import org.teavm.metaprogramming.CompileTime;
-import org.teavm.metaprogramming.Meta;
 import org.teavm.metaprogramming.Metaprogramming;
 import org.teavm.metaprogramming.ReflectClass;
 import org.teavm.metaprogramming.Value;
 import org.teavm.metaprogramming.reflect.ReflectField;
-import ua.ihromant.cls.ClassInfo;
-import ua.ihromant.cls.CommonClassInfo;
-import ua.ihromant.cls.ReflectClassInfo;
 import ua.ihromant.serializers.Serializer;
 
 import java.lang.reflect.Field;

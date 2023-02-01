@@ -14,6 +14,8 @@ import ua.ihromant.cls.ReflectClassInfo;
 import ua.ihromant.serializers.Serializer;
 import ua.ihromant.tree.ReflectInfoCache;
 
+import java.util.Arrays;
+
 @CompileTime
 public final class IO {
     private static final String BOOLEAN = "boolean";
@@ -36,8 +38,14 @@ public final class IO {
     }
 
     private static boolean blackList(ClassInfo cls) {
+        if (cls.isPrimitive()) {
+            return !Arrays.asList(BOOLEAN, INT, DOUBLE).contains(cls.name());
+        }
         if (cls.isInterface()) {
             return true;
+        }
+        if (cls.isArray()) {
+            return blackList(cls.componentType());
         }
         return !cls.assignableTo(IsSerializable.class);
     }
@@ -132,9 +140,11 @@ public final class IO {
     }
 
     public static void debug() {
-        var b = Def.A;
+        Def b = Def.A;
         System.out.println(IO.write(b));
-        var a = new Abc();
+        Abc a = new Abc();
         System.out.println(IO.write(a));
+        int[] c = new int[] {1, 2, 3};
+        System.out.println(IO.write(c));
     }
 }
