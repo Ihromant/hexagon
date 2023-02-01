@@ -1,7 +1,5 @@
 package ua.ihromant;
 
-import org.teavm.jso.JSObject;
-import org.teavm.jso.core.JSArray;
 import org.teavm.jso.json.JSON;
 import org.teavm.metaprogramming.CompileTime;
 import org.teavm.metaprogramming.Meta;
@@ -41,6 +39,9 @@ public final class IO {
         if (cls.isPrimitive()) {
             return !Arrays.asList(BOOLEAN, INT, DOUBLE).contains(cls.name());
         }
+        if ("java.lang.String".equals(cls.name())) {
+            return false;
+        }
         if (cls.isInterface()) {
             return true;
         }
@@ -64,54 +65,7 @@ public final class IO {
     }
 
     private static Value<Serializer> genericSerializer(ReflectClassInfo info) {
-        if (info.isArray()) {
-            return arraySerializer(info);
-        }
-        if (info.isEnum()) {
-            return enumSerializer();
-        }
-        if (info.isPrimitive()) {
-            return primitiveSerializer(info);
-        }
-        return ReflectInfoCache.INSTANCE.getSerializer(ReflectInfoCache.INSTANCE.find(info.name()));
-    }
-
-    private static Value<Serializer> arraySerializer(ReflectClassInfo info) {
-        ReflectClassInfo elementInfo = info.componentType();
-        Value<Serializer> childSerializer = genericSerializer(elementInfo);
-        if (childSerializer == null) {
-            Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No serializer for " + elementInfo.name());
-        }
-        ReflectClass<?> cls = info.unwrap();
-        return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
-            Value<Object> value = args[0];
-            Metaprogramming.exit(() -> {
-                JSArray<JSObject> target = JSArray.create();
-                int sz = cls.getArrayLength(value.get());
-                Serializer itemSerializer = childSerializer.get();
-                for (int i = 0; i < sz; ++i) {
-                    Object component = cls.getArrayElement(value.get(), i);
-                    target.push(itemSerializer.write(component));
-                }
-                return target;
-            });
-        });
-    }
-
-    private static Value<Serializer> enumSerializer() {
-        return Metaprogramming.emit(() -> Serializer.ENUM);
-    }
-
-    private static Value<Serializer> primitiveSerializer(ReflectClassInfo info) {
-        switch (info.name()) {
-            case BOOLEAN: return Metaprogramming.emit(() -> Serializer.BOOLEAN);
-            case INT: return Metaprogramming.emit(() -> Serializer.INT);
-            case DOUBLE: return Metaprogramming.emit(() -> Serializer.DOUBLE);
-            default: {
-                Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Tried to serialize unsupported primitive " + info.name());
-                return null;
-            }
-        }
+        return ReflectInfoCache.INSTANCE.getSerializer(info);
     }
 
     static class Abc implements IsSerializable {
@@ -120,6 +74,7 @@ public final class IO {
         private String c;
         private boolean d;
         private Def e;
+        private String f;
 
         String foo() {
             return "qwe";
@@ -143,8 +98,9 @@ public final class IO {
         Def b = Def.A;
         System.out.println(IO.write(b));
         Abc a = new Abc();
+        a.f = "abc";
         System.out.println(IO.write(a));
-        int[] c = new int[] {1, 2, 3};
+        int[][] c = new int[][]{{1, 2, 3}, {4, 5}};
         System.out.println(IO.write(c));
     }
 }
