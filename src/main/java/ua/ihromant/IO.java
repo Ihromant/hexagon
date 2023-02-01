@@ -2,8 +2,6 @@ package ua.ihromant;
 
 import org.teavm.jso.JSObject;
 import org.teavm.jso.core.JSArray;
-import org.teavm.jso.core.JSNumber;
-import org.teavm.jso.core.JSString;
 import org.teavm.jso.json.JSON;
 import org.teavm.metaprogramming.CompileTime;
 import org.teavm.metaprogramming.Meta;
@@ -67,12 +65,7 @@ public final class IO {
         if (info.isPrimitive()) {
             return primitiveSerializer(info);
         }
-        //ReflectClass<?> rc = null;
-        //ReflectField[] fds = rc.getFields();
-        //for (ReflectField rf : fds) {
-
-        //}
-        return ReflectInfoCache.INSTANCE.getSerializer(info);
+        return ReflectInfoCache.INSTANCE.getSerializer(ReflectInfoCache.INSTANCE.find(info.name()));
     }
 
     private static Value<Serializer> arraySerializer(ReflectClassInfo info) {
@@ -114,6 +107,12 @@ public final class IO {
     }
 
     static class Abc implements IsSerializable {
+        private int a;
+        private Integer b;
+        private String c;
+        private boolean d;
+        private Def e;
+
         String foo() {
             return "qwe";
         }
