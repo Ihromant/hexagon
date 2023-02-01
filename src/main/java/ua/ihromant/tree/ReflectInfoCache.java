@@ -24,6 +24,9 @@ public class ReflectInfoCache {
     private final ClassLoader classLoader = Metaprogramming.getClassLoader();
 
     private ReflectInfoCache() {
+        classes.put(boolean.class.getName(), boolean.class);
+        classes.put(int.class.getName(), int.class);
+        classes.put(double.class.getName(), double.class);
         definedSerializers.put(int.class.getName(), Metaprogramming.emit(() -> Serializer.INT));
         definedSerializers.put(Integer.class.getName(), Metaprogramming.emit(() -> Serializer.nullable(Serializer.INT)));
         definedSerializers.put(boolean.class.getName(), Metaprogramming.emit(() -> Serializer.BOOLEAN));
