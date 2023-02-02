@@ -70,9 +70,6 @@ public final class IO {
         if (info.isEnum()) {
             return enumSerializer();
         }
-        if (info.isPrimitive()) {
-            return primitiveSerializer(info);
-        }
         return ReflectInfoCache.INSTANCE.getSerializer(ReflectInfoCache.INSTANCE.find(info.name()));
     }
 
