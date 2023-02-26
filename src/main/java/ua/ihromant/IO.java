@@ -137,5 +137,7 @@ public final class IO {
         System.out.println(str);
         Abc reParsed = (Abc) IO.jsToJava(JSON.parse(str), Abc.class);
         System.out.println(reParsed);
+        System.out.println(reParsed.f.getClass() + " " + reParsed.f[1]);
+        System.out.println(reParsed.g.getClass());
     }
 }

@@ -28,6 +28,9 @@ public class DeserializerGenerator {
         definedDeserializers.put(double.class.getName(), Metaprogramming.lazy(() -> Deserializer.DOUBLE));
         definedDeserializers.put(Double.class.getName(), Metaprogramming.lazy(() -> Deserializer.nullable(Deserializer.DOUBLE)));
         definedDeserializers.put(String.class.getName(), Metaprogramming.lazy(() -> Deserializer.nullable(Deserializer.STRING)));
+        definedDeserializers.put(int[].class.getName(), Metaprogramming.lazy(() -> Deserializer.nullable(Deserializer.INT_ARRAY)));
+        definedDeserializers.put(boolean[].class.getName(), Metaprogramming.lazy(() -> Deserializer.nullable(Deserializer.BOOLEAN_ARRAY)));
+        definedDeserializers.put(double[].class.getName(), Metaprogramming.lazy(() -> Deserializer.nullable(Deserializer.DOUBLE_ARRAY)));
     }
 
     public static Value<Deserializer> getDeserializer(Class<?> cls) {
@@ -48,7 +51,7 @@ public class DeserializerGenerator {
             return buildEnumDeserializer(cls);
         }
         if (cls.isArray()) {
-            return buildArrayDeserializer(cls);
+            return buildArrayDeserializer(cls.componentType());
         }
         return buildObjectDeserializer(cls);
     }
@@ -62,20 +65,18 @@ public class DeserializerGenerator {
         });
     }
 
-    private static Value<Deserializer> buildArrayDeserializer(Class<?> cls) {
-        // return null;
-        Class<?> elementInfo = cls.componentType();
+    private static Value<Deserializer> buildArrayDeserializer(Class<?> elementInfo) {
         Value<Deserializer> childDeserializer = getDeserializer(elementInfo);
         if (childDeserializer == null) {
             Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No deserializer for " + elementInfo.getName());
         }
-        ReflectClass<?> reflElem = Metaprogramming.findClass(elementInfo);
+        ReflectClass<?> refElem = Metaprogramming.findClass(elementInfo);
         return Metaprogramming.proxy(Deserializer.class, (instance, method, args) -> {
             Value<JSArray<?>> value = Metaprogramming.emit(() -> (JSArray<?>) args[0]);
             Metaprogramming.exit(() -> {
                 JSArray<?> jsArray = value.get();
                 int length = jsArray.getLength();
-                Object[] result = reflElem.createArray(length);
+                Object[] result = refElem.createArray(length);
                 Deserializer itemDeserializer = childDeserializer.get();
                 for (int i = 0; i < length; ++i) {
                     result[i] = itemDeserializer.read(jsArray.get(i));
