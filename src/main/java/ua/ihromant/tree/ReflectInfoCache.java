@@ -42,7 +42,7 @@ public class ReflectInfoCache {
         if (result != null) {
             return result;
         }
-        Value<Serializer> generated = buildSerializer(cls);
+        Value<Serializer> generated = Metaprogramming.lazyFragment(() -> buildSerializer(cls));
         definedSerializers.put(cls.getName(), generated);
         return generated;
     }

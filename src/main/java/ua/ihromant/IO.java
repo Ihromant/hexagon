@@ -60,26 +60,29 @@ public final class IO {
         private Def e;
         private int[] f;
         private Integer[] g;
-
-        String foo() {
-            return "qwe";
-        }
+        private Ghi h;
     }
 
     enum Def implements IsSerializable {
         A, B, C;
-        String bar() {
-            return "qwe";
-        }
+    }
+
+    static class Ghi implements IsSerializable {
+        private int a;
+        private int b;
     }
 
     public static void debug() {
         Def b = Def.A;
         System.out.println(IO.write(b));
+        Ghi c = new Ghi();
+        c.a = 10;
+        c.b = 20;
         Abc a = new Abc();
         a.e = b;
         a.f = new int[] {1, 2, 3};
         a.g = new Integer[] {1, null, 2, null};
+        a.h = c;
         System.out.println(IO.write(a));
     }
 }
