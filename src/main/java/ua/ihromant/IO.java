@@ -73,19 +73,13 @@ public final class IO {
         }
     }
 
-    static class Ghi {
-        String baz() {
-            return "qwe";
-        }
-    }
-
     public static void debug() {
         Def b = Def.A;
         System.out.println(IO.write(b));
         Abc a = new Abc();
         a.e = b;
         a.f = new int[] {1, 2, 3};
-        a.g = new Integer[] {1, null, 2};
+        a.g = new Integer[] {1, null, 2, null};
         System.out.println(IO.write(a));
     }
 }
