@@ -1,6 +1,7 @@
 package ua.ihromant.deserializers;
 
 import org.teavm.jso.JSObject;
+import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSMapLike;
 import org.teavm.jso.core.JSString;
 import org.teavm.metaprogramming.CompileTime;
@@ -62,26 +63,26 @@ public class DeserializerGenerator {
     }
 
     private static Value<Deserializer> buildArrayDeserializer(Class<?> cls) {
-        return null;
-//        Class<?> elementInfo = cls.componentType();
-//        Value<Deserializer> childDeserializer = getDeserializer(elementInfo);
-//        if (childDeserializer == null) {
-//            Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No deserializer for " + elementInfo.getName());
-//        }
-//        ReflectClass<?> refCl = Metaprogramming.findClass(cls);
-//        return Metaprogramming.proxy(Deserializer.class, (instance, method, args) -> {
-//            Value<JSArray<?>> value = Metaprogramming.emit(() -> (JSArray<?>) args[0]);
-//            Metaprogramming.exit(() -> {
-//                JSArray<?> jsArray = value.get();
-//                int length = jsArray.getLength();
-//                Object[] result = refCl.createArray(length);
-//                Deserializer itemDeserializer = childDeserializer.get();
-//                for (int i = 0; i < length; ++i) {
-//                    result[i] = itemDeserializer.read(jsArray.get(i));
-//                }
-//                return result;
-//            });
-//        });
+        // return null;
+        Class<?> elementInfo = cls.componentType();
+        Value<Deserializer> childDeserializer = getDeserializer(elementInfo);
+        if (childDeserializer == null) {
+            Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No deserializer for " + elementInfo.getName());
+        }
+        ReflectClass<?> refCl = Metaprogramming.findClass(cls);
+        return Metaprogramming.proxy(Deserializer.class, (instance, method, args) -> {
+            Value<JSArray<?>> value = Metaprogramming.emit(() -> (JSArray<?>) args[0]);
+            Metaprogramming.exit(() -> {
+                JSArray<?> jsArray = value.get();
+                int length = jsArray.getLength();
+                Object[] result = refCl.createArray(length);
+                Deserializer itemDeserializer = childDeserializer.get();
+                for (int i = 0; i < length; ++i) {
+                    result[i] = itemDeserializer.read(jsArray.get(i));
+                }
+                return result;
+            });
+        });
     }
 
     private static Value<Deserializer> buildObjectDeserializer(Class<?> cls) {
