@@ -75,12 +75,9 @@ public class SerializerGenerator {
     }
 
     private static Value<Serializer> buildObjectSerializer(Class<?> cls) {
-        //ClassInfo inf = new CommonClassInfo(cls);
         Field[] fields = cls.getDeclaredFields();
         ReflectClass<?> refCl = Metaprogramming.findClass(cls);
         return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
-            //boolean b = inf.isPrimitive();
-            //cls.getFields()[0].getType()
             Value<JSMapLike<JSObject>> result = Metaprogramming.emit(() -> JSObjects.create());
             Value<Object> object = args[0];
             for (Field fd : fields) {
@@ -89,16 +86,13 @@ public class SerializerGenerator {
                     continue;
                 }
                 String propName = fd.getName();
-                ReflectField reflFd = refCl.getDeclaredField(propName);
-                //Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), reflFd.getName() + " " + reflFd.getClass());
+                ReflectField refFd = refCl.getDeclaredField(propName);
                 Value<Serializer> fieldSerializer = getSerializer(fd.getType());
-                Value<Object> javaProp = Metaprogramming.emit(() -> reflFd.get(object.get()));
+                Value<Object> javaProp = Metaprogramming.emit(() -> refFd.get(object.get()));
                 Value<JSObject> jsProp = Metaprogramming.emit(() -> fieldSerializer.get().write(javaProp.get()));
                 Metaprogramming.emit(() -> result.get().set(propName, jsProp.get()));
-                //Metaprogramming.emit()
             }
             Metaprogramming.exit(() -> result.get());
-            //Metaprogramming.exit(() -> b ? JSNumber.valueOf(1) : JSString.valueOf(cls.getName()));
         });
     }
 }

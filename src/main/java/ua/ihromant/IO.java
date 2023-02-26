@@ -87,6 +87,20 @@ public final class IO {
         private int[] f;
         private Integer[] g;
         private Ghi h;
+
+        @Override
+        public String toString() {
+            return "Abc{" +
+                    "a=" + a +
+                    ", b=" + b +
+                    ", c='" + c + '\'' +
+                    ", d=" + d +
+                    ", e=" + e +
+//                    ", f=" + Arrays.toString(f) +
+//                    ", g=" + Arrays.toString(g) +
+                    ", h=" + h +
+                    '}';
+        }
     }
 
     enum Def implements IsSerializable {
@@ -96,6 +110,14 @@ public final class IO {
     static class Ghi implements IsSerializable {
         private int a;
         private int b;
+
+        @Override
+        public String toString() {
+            return "Ghi{" +
+                    "a=" + a +
+                    ", b=" + b +
+                    '}';
+        }
     }
 
     public static void debug() {
@@ -105,10 +127,13 @@ public final class IO {
         c.a = 10;
         c.b = 20;
         Abc a = new Abc();
-        //a.e = b;
-        a.f = new int[] {1, 2, 3};
+        a.e = b;
+        //a.f = new int[] {1, 2, 3};
         //a.g = new Integer[] {1, null, 2, null};
-        //a.h = c;
-        System.out.println(JSON.stringify(IO.javaToJs(a)));
+        a.h = c;
+        String str = JSON.stringify(IO.javaToJs(a));
+        System.out.println(str);
+        Abc reParsed = (Abc) IO.jsToJava(JSON.parse(str), Abc.class);
+        System.out.println(reParsed);
     }
 }
