@@ -27,13 +27,13 @@ public class ReflectInfoCache {
         classes.put(boolean.class.getName(), boolean.class);
         classes.put(int.class.getName(), int.class);
         classes.put(double.class.getName(), double.class);
-        definedSerializers.put(int.class.getName(), Metaprogramming.emit(() -> Serializer.INT));
-        definedSerializers.put(Integer.class.getName(), Metaprogramming.emit(() -> Serializer.nullable(Serializer.INT)));
-        definedSerializers.put(boolean.class.getName(), Metaprogramming.emit(() -> Serializer.BOOLEAN));
-        definedSerializers.put(Boolean.class.getName(), Metaprogramming.emit(() -> Serializer.nullable(Serializer.BOOLEAN)));
-        definedSerializers.put(double.class.getName(), Metaprogramming.emit(() -> Serializer.DOUBLE));
-        definedSerializers.put(Double.class.getName(), Metaprogramming.emit(() -> Serializer.nullable(Serializer.DOUBLE)));
-        definedSerializers.put(String.class.getName(), Metaprogramming.emit(() -> Serializer.nullable(Serializer.STRING)));
+        definedSerializers.put(int.class.getName(), Metaprogramming.lazy(() -> Serializer.INT));
+        definedSerializers.put(Integer.class.getName(), Metaprogramming.lazy(() -> Serializer.nullable(Serializer.INT)));
+        definedSerializers.put(boolean.class.getName(), Metaprogramming.lazy(() -> Serializer.BOOLEAN));
+        definedSerializers.put(Boolean.class.getName(), Metaprogramming.lazy(() -> Serializer.nullable(Serializer.BOOLEAN)));
+        definedSerializers.put(double.class.getName(), Metaprogramming.lazy(() -> Serializer.DOUBLE));
+        definedSerializers.put(Double.class.getName(), Metaprogramming.lazy(() -> Serializer.nullable(Serializer.DOUBLE)));
+        definedSerializers.put(String.class.getName(), Metaprogramming.lazy(() -> Serializer.nullable(Serializer.STRING)));
     }
 
     public Value<Serializer> getSerializer(Class<?> cls) {
