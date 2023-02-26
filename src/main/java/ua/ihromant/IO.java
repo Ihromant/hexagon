@@ -1,7 +1,5 @@
 package ua.ihromant;
 
-import org.teavm.jso.JSObject;
-import org.teavm.jso.core.JSArray;
 import org.teavm.jso.json.JSON;
 import org.teavm.metaprogramming.CompileTime;
 import org.teavm.metaprogramming.Meta;
@@ -14,14 +12,8 @@ import ua.ihromant.cls.ReflectClassInfo;
 import ua.ihromant.serializers.Serializer;
 import ua.ihromant.tree.ReflectInfoCache;
 
-import java.util.Arrays;
-
 @CompileTime
 public final class IO {
-    private static final String BOOLEAN = "boolean";
-    private static final String INT = "int";
-    private static final String DOUBLE = "double";
-
     private IO() {
 
     }
@@ -47,25 +39,17 @@ public final class IO {
     @Meta
     private static native Serializer getProxy(Class<?> cls);
     private static void getProxy(ReflectClass<?> cls) {
-        ReflectClassInfo info = new ReflectClassInfo(cls);
         if (blackList(new ReflectClassInfo(cls))) {
             Metaprogramming.unsupportedCase();
             return;
         }
         Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), cls.getName());
-        Value<Serializer> serializer = genericSerializer(info); // TODO later here should be generic serializer
+        Value<Serializer> serializer = genericSerializer(cls); // TODO later here should be generic serializer
         Metaprogramming.exit(() -> serializer.get());
     }
 
-    private static Value<Serializer> genericSerializer(ReflectClassInfo info) {
-        if (info.isEnum()) {
-            return enumSerializer();
-        }
-        return ReflectInfoCache.INSTANCE.getSerializer(ReflectInfoCache.INSTANCE.find(info.name()));
-    }
-
-    private static Value<Serializer> enumSerializer() {
-        return Metaprogramming.emit(() -> Serializer.ENUM);
+    private static Value<Serializer> genericSerializer(ReflectClass<?> cls) {
+        return ReflectInfoCache.INSTANCE.getSerializer(ReflectInfoCache.INSTANCE.find(cls.getName()));
     }
 
     static class Abc implements IsSerializable {
@@ -98,6 +82,7 @@ public final class IO {
         Def b = Def.A;
         System.out.println(IO.write(b));
         Abc a = new Abc();
+        a.e = b;
         a.f = new int[] {1, 2, 3};
         System.out.println(IO.write(a));
     }

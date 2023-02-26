@@ -50,7 +50,7 @@ public class ReflectInfoCache {
     public Class<?> find(String name) {
         if (!classes.containsKey(name)) {
             try {
-                Class<?> cls = classLoader.loadClass(name);
+                Class<?> cls = Class.forName(name, false, classLoader);
                 classes.put(name, cls);
             } catch (Exception e) {
                 Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Was not able to find class " + name);
