@@ -1,6 +1,7 @@
 package ua.ihromant.tree;
 
 import org.teavm.jso.JSObject;
+import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSMapLike;
 import org.teavm.jso.core.JSObjects;
 import org.teavm.metaprogramming.CompileTime;
@@ -37,10 +38,13 @@ public class ReflectInfoCache {
     }
 
     public Value<Serializer> getSerializer(Class<?> cls) {
-        if (cls.isEnum()) {
-            return Metaprogramming.emit(() -> Serializer.nullable(Serializer.ENUM));
+        Value<Serializer> result = definedSerializers.get(cls.getName());
+        if (result != null) {
+            return result;
         }
-        return definedSerializers.computeIfAbsent(cls.getName(), n -> buildSerializer(cls));
+        Value<Serializer> generated = buildSerializer(cls);
+        definedSerializers.put(cls.getName(), generated);
+        return generated;
     }
 
     public Class<?> find(String name) {
@@ -56,6 +60,38 @@ public class ReflectInfoCache {
     }
 
     private Value<Serializer> buildSerializer(Class<?> cls) {
+        if (cls.isEnum()) {
+            return Metaprogramming.lazy(() -> Serializer.nullable(Serializer.ENUM));
+        }
+        if (cls.isArray()) {
+            return buildArraySerializer(cls);
+        }
+        return buildObjectSerializer(cls);
+    }
+
+    private Value<Serializer> buildArraySerializer(Class<?> cls) {
+        Class<?> elementInfo = cls.componentType();
+        Value<Serializer> childSerializer = getSerializer(elementInfo);
+        if (childSerializer == null) {
+            Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No serializer for " + elementInfo.getName());
+        }
+        ReflectClass<?> rCls = Metaprogramming.findClass(cls);
+        return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
+            Value<Object> value = args[0];
+            Metaprogramming.exit(() -> {
+                JSArray<JSObject> target = JSArray.create();
+                int sz = rCls.getArrayLength(value.get());
+                Serializer itemSerializer = childSerializer.get();
+                for (int i = 0; i < sz; ++i) {
+                    Object component = rCls.getArrayElement(value.get(), i);
+                    target.push(itemSerializer.write(component));
+                }
+                return target;
+            });
+        });
+    }
+
+    private Value<Serializer> buildObjectSerializer(Class<?> cls) {
         //ClassInfo inf = new CommonClassInfo(cls);
         Field[] fields = cls.getDeclaredFields();
         ReflectClass<?> reflCl = Metaprogramming.findClass(cls);
