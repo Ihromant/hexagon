@@ -69,13 +69,13 @@ public class DeserializerGenerator {
         if (childDeserializer == null) {
             Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No deserializer for " + elementInfo.getName());
         }
-        ReflectClass<?> refCl = Metaprogramming.findClass(cls);
+        ReflectClass<?> reflElem = Metaprogramming.findClass(elementInfo);
         return Metaprogramming.proxy(Deserializer.class, (instance, method, args) -> {
             Value<JSArray<?>> value = Metaprogramming.emit(() -> (JSArray<?>) args[0]);
             Metaprogramming.exit(() -> {
                 JSArray<?> jsArray = value.get();
                 int length = jsArray.getLength();
-                Object[] result = refCl.createArray(length);
+                Object[] result = reflElem.createArray(length);
                 Deserializer itemDeserializer = childDeserializer.get();
                 for (int i = 0; i < length; ++i) {
                     result[i] = itemDeserializer.read(jsArray.get(i));

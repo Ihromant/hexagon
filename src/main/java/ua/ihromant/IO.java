@@ -16,6 +16,8 @@ import ua.ihromant.deserializers.DeserializerGenerator;
 import ua.ihromant.serializers.Serializer;
 import ua.ihromant.serializers.SerializerGenerator;
 
+import java.util.Arrays;
+
 @CompileTime
 public final class IO {
     private IO() {
@@ -96,8 +98,8 @@ public final class IO {
                     ", c='" + c + '\'' +
                     ", d=" + d +
                     ", e=" + e +
-//                    ", f=" + Arrays.toString(f) +
-//                    ", g=" + Arrays.toString(g) +
+                    ", f=" + (f == null ? null : Arrays.toString(f)) +
+                    ", g=" + (g == null ? null : Arrays.toString(g)) +
                     ", h=" + h +
                     '}';
         }
@@ -128,8 +130,8 @@ public final class IO {
         c.b = 20;
         Abc a = new Abc();
         a.e = b;
-        //a.f = new int[] {1, 2, 3};
-        //a.g = new Integer[] {1, null, 2, null};
+        a.f = new int[] {1, 2, 3};
+        a.g = new Integer[] {1, null, 2, null};
         a.h = c;
         String str = JSON.stringify(IO.javaToJs(a));
         System.out.println(str);

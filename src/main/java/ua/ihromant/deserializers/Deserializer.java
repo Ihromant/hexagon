@@ -5,6 +5,7 @@ import org.teavm.jso.core.JSBoolean;
 import org.teavm.jso.core.JSNumber;
 import org.teavm.jso.core.JSObjects;
 import org.teavm.jso.core.JSString;
+import ua.ihromant.serializers.Util;
 
 public interface Deserializer {
     Deserializer BOOLEAN = jso -> jso.<JSBoolean>cast().booleanValue();
@@ -13,7 +14,7 @@ public interface Deserializer {
     Deserializer STRING = jso -> jso.<JSString>cast().stringValue();
 
     static Deserializer nullable(Deserializer base) {
-        return jso -> JSObjects.isUndefined(jso) ? null : base.read(jso);
+        return jso -> JSObjects.isUndefined(jso) || Util.isNull(jso) ? null : base.read(jso);
     }
 
     Object read(JSObject jso);
