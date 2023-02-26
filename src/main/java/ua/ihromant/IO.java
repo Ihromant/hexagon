@@ -48,7 +48,7 @@ public final class IO {
             return;
         }
         Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), cls.getName());
-        Value<Serializer> serializer = SerializerGenerator.INSTANCE.getSerializer(ClassCache.find(cls.getName()));
+        Value<Serializer> serializer = SerializerGenerator.getSerializer(ClassCache.find(cls.getName()));
         Metaprogramming.exit(() -> serializer.get());
     }
 

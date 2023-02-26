@@ -17,11 +17,9 @@ import java.util.Map;
 
 @CompileTime
 public class SerializerGenerator {
-    public static final SerializerGenerator INSTANCE = new SerializerGenerator();
+    private static final Map<String, Value<Serializer>> definedSerializers = new HashMap<>();
 
-    private final Map<String, Value<Serializer>> definedSerializers = new HashMap<>();
-
-    private SerializerGenerator() {
+    static {
         definedSerializers.put(int.class.getName(), Metaprogramming.lazy(() -> Serializer.INT));
         definedSerializers.put(Integer.class.getName(), Metaprogramming.lazy(() -> Serializer.nullable(Serializer.INT)));
         definedSerializers.put(boolean.class.getName(), Metaprogramming.lazy(() -> Serializer.BOOLEAN));
@@ -31,7 +29,7 @@ public class SerializerGenerator {
         definedSerializers.put(String.class.getName(), Metaprogramming.lazy(() -> Serializer.nullable(Serializer.STRING)));
     }
 
-    public Value<Serializer> getSerializer(Class<?> cls) {
+    public static Value<Serializer> getSerializer(Class<?> cls) {
         Value<Serializer> result = definedSerializers.get(cls.getName());
         if (result != null) {
             return result;
@@ -41,7 +39,7 @@ public class SerializerGenerator {
         return generated;
     }
 
-    private Value<Serializer> buildSerializer(Class<?> cls) {
+    private static Value<Serializer> buildSerializer(Class<?> cls) {
         if (cls.isEnum()) {
             return Metaprogramming.lazy(() -> Serializer.nullable(Serializer.ENUM));
         }
@@ -51,7 +49,7 @@ public class SerializerGenerator {
         return buildObjectSerializer(cls);
     }
 
-    private Value<Serializer> buildArraySerializer(Class<?> cls) {
+    private static Value<Serializer> buildArraySerializer(Class<?> cls) {
         Class<?> elementInfo = cls.componentType();
         Value<Serializer> childSerializer = getSerializer(elementInfo);
         if (childSerializer == null) {
@@ -73,7 +71,7 @@ public class SerializerGenerator {
         });
     }
 
-    private Value<Serializer> buildObjectSerializer(Class<?> cls) {
+    private static Value<Serializer> buildObjectSerializer(Class<?> cls) {
         //ClassInfo inf = new CommonClassInfo(cls);
         Field[] fields = cls.getDeclaredFields();
         ReflectClass<?> reflCl = Metaprogramming.findClass(cls);
