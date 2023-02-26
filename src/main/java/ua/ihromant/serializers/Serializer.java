@@ -7,15 +7,15 @@ import org.teavm.jso.core.JSObjects;
 import org.teavm.jso.core.JSString;
 
 public interface Serializer {
-    Serializer BOOLEAN = object -> JSBoolean.valueOf((boolean) object);
-    Serializer INT = object -> JSNumber.valueOf((int) object);
-    Serializer DOUBLE = object -> JSNumber.valueOf((double) object);
-    Serializer ENUM = object -> JSString.valueOf(((Enum<?>) object).name());
-    Serializer STRING = object -> JSString.valueOf((String) object);
+    Serializer BOOLEAN = jo -> JSBoolean.valueOf((boolean) jo);
+    Serializer INT = jo -> JSNumber.valueOf((int) jo);
+    Serializer DOUBLE = jo -> JSNumber.valueOf((double) jo);
+    Serializer ENUM = jo -> JSString.valueOf(((Enum<?>) jo).name());
+    Serializer STRING = jo -> JSString.valueOf((String) jo);
 
     static Serializer nullable(Serializer base) {
-        return object -> object == null ? JSObjects.undefined() : base.write(object);
+        return jo -> jo == null ? JSObjects.undefined() : base.write(jo);
     }
 
-    JSObject write(Object object);
+    JSObject write(Object jo);
 }

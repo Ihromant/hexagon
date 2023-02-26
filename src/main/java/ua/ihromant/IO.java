@@ -9,8 +9,9 @@ import org.teavm.metaprogramming.Value;
 import ua.ihromant.cls.ClassInfo;
 import ua.ihromant.cls.CommonClassInfo;
 import ua.ihromant.cls.ReflectClassInfo;
+import ua.ihromant.cls.ClassCache;
 import ua.ihromant.serializers.Serializer;
-import ua.ihromant.tree.ReflectInfoCache;
+import ua.ihromant.serializers.SerializerGenerator;
 
 @CompileTime
 public final class IO {
@@ -47,12 +48,8 @@ public final class IO {
             return;
         }
         Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), cls.getName());
-        Value<Serializer> serializer = genericSerializer(cls); // TODO later here should be generic serializer
+        Value<Serializer> serializer = SerializerGenerator.INSTANCE.getSerializer(ClassCache.find(cls.getName()));
         Metaprogramming.exit(() -> serializer.get());
-    }
-
-    private static Value<Serializer> genericSerializer(ReflectClass<?> cls) {
-        return ReflectInfoCache.INSTANCE.getSerializer(ReflectInfoCache.INSTANCE.find(cls.getName()));
     }
 
     static class Abc implements IsSerializable {

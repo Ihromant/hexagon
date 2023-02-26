@@ -1,4 +1,4 @@
-package ua.ihromant.tree;
+package ua.ihromant.serializers;
 
 import org.teavm.jso.JSObject;
 import org.teavm.jso.core.JSArray;
@@ -9,7 +9,6 @@ import org.teavm.metaprogramming.Metaprogramming;
 import org.teavm.metaprogramming.ReflectClass;
 import org.teavm.metaprogramming.Value;
 import org.teavm.metaprogramming.reflect.ReflectField;
-import ua.ihromant.serializers.Serializer;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -17,17 +16,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @CompileTime
-public class ReflectInfoCache {
-    public static final ReflectInfoCache INSTANCE = new ReflectInfoCache();
+public class SerializerGenerator {
+    public static final SerializerGenerator INSTANCE = new SerializerGenerator();
 
-    private final Map<String, Class<?>> classes = new HashMap<>();
     private final Map<String, Value<Serializer>> definedSerializers = new HashMap<>();
-    private final ClassLoader classLoader = Metaprogramming.getClassLoader();
 
-    private ReflectInfoCache() {
-        classes.put(boolean.class.getName(), boolean.class);
-        classes.put(int.class.getName(), int.class);
-        classes.put(double.class.getName(), double.class);
+    private SerializerGenerator() {
         definedSerializers.put(int.class.getName(), Metaprogramming.lazy(() -> Serializer.INT));
         definedSerializers.put(Integer.class.getName(), Metaprogramming.lazy(() -> Serializer.nullable(Serializer.INT)));
         definedSerializers.put(boolean.class.getName(), Metaprogramming.lazy(() -> Serializer.BOOLEAN));
@@ -45,18 +39,6 @@ public class ReflectInfoCache {
         Value<Serializer> generated = Metaprogramming.lazyFragment(() -> buildSerializer(cls));
         definedSerializers.put(cls.getName(), generated);
         return generated;
-    }
-
-    public Class<?> find(String name) {
-        if (!classes.containsKey(name)) {
-            try {
-                Class<?> cls = Class.forName(name, false, classLoader);
-                classes.put(name, cls);
-            } catch (Exception e) {
-                Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Was not able to find class " + name);
-            }
-        }
-        return classes.get(name);
     }
 
     private Value<Serializer> buildSerializer(Class<?> cls) {
