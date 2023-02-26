@@ -34,14 +34,17 @@ public class SerializerGenerator {
         if (result != null) {
             return result;
         }
-        Value<Serializer> generated = Metaprogramming.lazyFragment(() -> buildSerializer(cls));
+        Value<Serializer> generated = Metaprogramming.lazyFragment(() -> {
+            Value<Serializer> notNull = buildSerializer(cls);
+            return Metaprogramming.emit(() -> Serializer.nullable(notNull.get()));
+        });
         definedSerializers.put(cls.getName(), generated);
         return generated;
     }
 
     private static Value<Serializer> buildSerializer(Class<?> cls) {
         if (cls.isEnum()) {
-            return Metaprogramming.lazy(() -> Serializer.nullable(Serializer.ENUM));
+            return Metaprogramming.emit(() -> Serializer.ENUM);
         }
         if (cls.isArray()) {
             return buildArraySerializer(cls);
@@ -55,15 +58,15 @@ public class SerializerGenerator {
         if (childSerializer == null) {
             Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "No serializer for " + elementInfo.getName());
         }
-        ReflectClass<?> rCls = Metaprogramming.findClass(cls);
+        ReflectClass<?> refCl = Metaprogramming.findClass(cls);
         return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
             Value<Object> value = args[0];
             Metaprogramming.exit(() -> {
                 JSArray<JSObject> target = JSArray.create();
-                int sz = rCls.getArrayLength(value.get());
+                int sz = refCl.getArrayLength(value.get());
                 Serializer itemSerializer = childSerializer.get();
                 for (int i = 0; i < sz; ++i) {
-                    Object component = rCls.getArrayElement(value.get(), i);
+                    Object component = refCl.getArrayElement(value.get(), i);
                     target.push(itemSerializer.write(component));
                 }
                 return target;
@@ -74,7 +77,7 @@ public class SerializerGenerator {
     private static Value<Serializer> buildObjectSerializer(Class<?> cls) {
         //ClassInfo inf = new CommonClassInfo(cls);
         Field[] fields = cls.getDeclaredFields();
-        ReflectClass<?> reflCl = Metaprogramming.findClass(cls);
+        ReflectClass<?> refCl = Metaprogramming.findClass(cls);
         return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
             //boolean b = inf.isPrimitive();
             //cls.getFields()[0].getType()
@@ -86,7 +89,7 @@ public class SerializerGenerator {
                     continue;
                 }
                 String propName = fd.getName();
-                ReflectField reflFd = reflCl.getDeclaredField(propName);
+                ReflectField reflFd = refCl.getDeclaredField(propName);
                 //Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), reflFd.getName() + " " + reflFd.getClass());
                 Value<Serializer> fieldSerializer = getSerializer(fd.getType());
                 Value<Object> javaProp = Metaprogramming.emit(() -> reflFd.get(object.get()));

@@ -1,5 +1,6 @@
 package ua.ihromant;
 
+import org.teavm.jso.JSObject;
 import org.teavm.jso.json.JSON;
 import org.teavm.metaprogramming.CompileTime;
 import org.teavm.metaprogramming.Meta;
@@ -10,6 +11,8 @@ import ua.ihromant.cls.ClassInfo;
 import ua.ihromant.cls.CommonClassInfo;
 import ua.ihromant.cls.ReflectClassInfo;
 import ua.ihromant.cls.ClassCache;
+import ua.ihromant.deserializers.Deserializer;
+import ua.ihromant.deserializers.DeserializerGenerator;
 import ua.ihromant.serializers.Serializer;
 import ua.ihromant.serializers.SerializerGenerator;
 
@@ -19,15 +22,26 @@ public final class IO {
 
     }
 
-    public static String write(Object o) {
-        return JSON.stringify(proxyFor(o.getClass()).write(o));
+    public static JSObject javaToJs(Object jo) {
+        return serializerFor(jo.getClass()).write(jo);
     }
 
-    private static Serializer proxyFor(Class<?> cls) {
+    public static Object jsToJava(JSObject jso, Class<?> cls) {
+        return deserializerFor(cls).read(jso);
+    }
+
+    private static Deserializer deserializerFor(Class<?> cls) {
         if (blackList(new CommonClassInfo(cls))) {
             throw new IllegalArgumentException("Not supported class " + cls.getName());
         }
-        return getProxy(cls);
+        return deserializer(cls);
+    }
+
+    private static Serializer serializerFor(Class<?> cls) {
+        if (blackList(new CommonClassInfo(cls))) {
+            throw new IllegalArgumentException("Not supported class " + cls.getName());
+        }
+        return serializer(cls);
     }
 
     private static boolean blackList(ClassInfo cls) {
@@ -41,8 +55,8 @@ public final class IO {
     }
 
     @Meta
-    private static native Serializer getProxy(Class<?> cls);
-    private static void getProxy(ReflectClass<?> cls) {
+    private static native Serializer serializer(Class<?> cls);
+    private static void serializer(ReflectClass<?> cls) {
         if (blackList(new ReflectClassInfo(cls))) {
             Metaprogramming.unsupportedCase();
             return;
@@ -50,6 +64,18 @@ public final class IO {
         Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), cls.getName());
         Value<Serializer> serializer = SerializerGenerator.getSerializer(ClassCache.find(cls.getName()));
         Metaprogramming.exit(() -> serializer.get());
+    }
+
+    @Meta
+    private static native Deserializer deserializer(Class<?> cls);
+    private static void deserializer(ReflectClass<?> cls) {
+        if (blackList(new ReflectClassInfo(cls))) {
+            Metaprogramming.unsupportedCase();
+            return;
+        }
+        Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), cls.getName());
+        Value<Deserializer> deserializer = DeserializerGenerator.getDeserializer(ClassCache.find(cls.getName()));
+        Metaprogramming.exit(() -> deserializer.get());
     }
 
     static class Abc implements IsSerializable {
@@ -74,15 +100,15 @@ public final class IO {
 
     public static void debug() {
         Def b = Def.A;
-        System.out.println(IO.write(b));
+        System.out.println(JSON.stringify(IO.javaToJs(b)));
         Ghi c = new Ghi();
         c.a = 10;
         c.b = 20;
         Abc a = new Abc();
-        a.e = b;
+        //a.e = b;
         a.f = new int[] {1, 2, 3};
-        a.g = new Integer[] {1, null, 2, null};
-        a.h = c;
-        System.out.println(IO.write(a));
+        //a.g = new Integer[] {1, null, 2, null};
+        //a.h = c;
+        System.out.println(JSON.stringify(IO.javaToJs(a)));
     }
 }
