@@ -59,6 +59,7 @@ public final class IO {
         private boolean d;
         private Def e;
         private int[] f;
+        private Integer[] g;
 
         String foo() {
             return "qwe";
@@ -84,6 +85,7 @@ public final class IO {
         Abc a = new Abc();
         a.e = b;
         a.f = new int[] {1, 2, 3};
+        a.g = new Integer[] {1, null, 2};
         System.out.println(IO.write(a));
     }
 }
