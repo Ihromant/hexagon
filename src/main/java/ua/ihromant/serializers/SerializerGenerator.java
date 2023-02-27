@@ -9,10 +9,10 @@ import org.teavm.metaprogramming.Metaprogramming;
 import org.teavm.metaprogramming.ReflectClass;
 import org.teavm.metaprogramming.Value;
 import org.teavm.metaprogramming.reflect.ReflectField;
+import ua.ihromant.cls.ClassField;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @CompileTime
@@ -75,19 +75,14 @@ public class SerializerGenerator {
     }
 
     private static Value<Serializer> buildObjectSerializer(Class<?> cls) {
-        Field[] fields = cls.getDeclaredFields();
-        ReflectClass<?> refCl = Metaprogramming.findClass(cls);
+        List<ClassField> classFields = ClassField.readSerializableFields(cls);
         return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
             Value<JSMapLike<JSObject>> result = Metaprogramming.emit(() -> JSObjects.create());
             Value<Object> object = args[0];
-            for (Field fd : fields) {
-                int mod = fd.getModifiers();
-                if (Modifier.isStatic(mod) || Modifier.isTransient(mod)) {
-                    continue;
-                }
-                String propName = fd.getName();
-                ReflectField refFd = refCl.getDeclaredField(propName);
-                Value<Serializer> fieldSerializer = getSerializer(fd.getType());
+            for (ClassField cf : classFields) {
+                ReflectField refFd = cf.getRefFd();
+                String propName = refFd.getName();
+                Value<Serializer> fieldSerializer = getSerializer((Class<?>) cf.getFieldType());
                 Value<Object> javaProp = Metaprogramming.emit(() -> refFd.get(object.get()));
                 Value<JSObject> jsProp = Metaprogramming.emit(() -> fieldSerializer.get().write(javaProp.get()));
                 Metaprogramming.emit(() -> result.get().set(propName, jsProp.get()));

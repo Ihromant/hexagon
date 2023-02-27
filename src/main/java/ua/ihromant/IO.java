@@ -80,7 +80,11 @@ public final class IO {
         Metaprogramming.exit(() -> deserializer.get());
     }
 
-    static class Abc implements IsSerializable {
+    static class O {
+        protected int aa;
+    }
+
+    static class Abc extends O implements IsSerializable {
         private int a;
         private Integer b;
         private String c;
@@ -93,7 +97,8 @@ public final class IO {
         @Override
         public String toString() {
             return "Abc{" +
-                    "a=" + a +
+                    "aa=" + aa +
+                    ", a=" + a +
                     ", b=" + b +
                     ", c='" + c + '\'' +
                     ", d=" + d +
@@ -129,6 +134,7 @@ public final class IO {
         c.a = 10;
         c.b = 20;
         Abc a = new Abc();
+        a.aa = 20;
         a.e = b;
         a.f = new int[] {1, 2, 3};
         a.g = new Integer[] {1, null, 2, null};

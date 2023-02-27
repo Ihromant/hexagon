@@ -10,10 +10,12 @@ import org.teavm.metaprogramming.ReflectClass;
 import org.teavm.metaprogramming.Value;
 import org.teavm.metaprogramming.reflect.ReflectField;
 import org.teavm.metaprogramming.reflect.ReflectMethod;
+import ua.ihromant.cls.ClassField;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @CompileTime
@@ -87,20 +89,16 @@ public class DeserializerGenerator {
     }
 
     private static Value<Deserializer> buildObjectDeserializer(Class<?> cls) {
-        Field[] fields = cls.getDeclaredFields();
         ReflectClass<?> refCl = Metaprogramming.findClass(cls);
         ReflectMethod defaultConstructor = refCl.getDeclaredMethod("<init>");
+        List<ClassField> classFields = ClassField.readSerializableFields(cls);
         return Metaprogramming.proxy(Deserializer.class, (instance, method, args) -> {
             Value<Object> jo = Metaprogramming.emit(() -> defaultConstructor.construct());
             @SuppressWarnings("unchecked") Value<JSMapLike<JSObject>> jso = Metaprogramming.emit(() -> (JSMapLike<JSObject>) args[0]);
-            for (Field fd : fields) {
-                int mod = fd.getModifiers();
-                if (Modifier.isStatic(mod) || Modifier.isTransient(mod)) {
-                    continue;
-                }
-                String propName = fd.getName();
-                ReflectField refFd = refCl.getDeclaredField(propName);
-                Value<Deserializer> fieldDeserializer = getDeserializer(fd.getType());
+            for (ClassField cf : classFields) {
+                ReflectField refFd = cf.getRefFd();
+                String propName = refFd.getName();
+                Value<Deserializer> fieldDeserializer = getDeserializer((Class<?>) cf.getFieldType());
                 Value<JSObject> jsProp = Metaprogramming.emit(() -> jso.get().get(propName));
                 Value<Object> javaProp = Metaprogramming.emit(() -> fieldDeserializer.get().read(jsProp.get()));
                 Metaprogramming.emit(() -> refFd.set(jo.get(), javaProp.get()));
