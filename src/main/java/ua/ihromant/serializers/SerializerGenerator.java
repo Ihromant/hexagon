@@ -11,9 +11,12 @@ import org.teavm.metaprogramming.Value;
 import org.teavm.metaprogramming.reflect.ReflectField;
 import ua.ihromant.cls.ClassField;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @CompileTime
 public class SerializerGenerator {
@@ -27,6 +30,39 @@ public class SerializerGenerator {
         definedSerializers.put(double.class.getName(), Metaprogramming.lazy(() -> Serializer.DOUBLE));
         definedSerializers.put(Double.class.getName(), Metaprogramming.lazy(() -> Serializer.nullable(Serializer.DOUBLE)));
         definedSerializers.put(String.class.getName(), Metaprogramming.lazy(() -> Serializer.nullable(Serializer.STRING)));
+    }
+
+    public static Value<Serializer> getSerializer(Type type) {
+        if (type instanceof ParameterizedType pt) {
+            Type[] types = pt.getActualTypeArguments();
+            Class<?> raw = (Class<?>) pt.getRawType();
+            if (Map.class.equals(raw)) {
+                return Metaprogramming.lazyFragment(() -> {
+                    Value<Serializer> valueSerializer = getSerializer(types[1]);
+                    Value<Serializer> notNull = Metaprogramming.emit(() -> Serializer.mapSerializer(valueSerializer.get()));
+                    return Metaprogramming.emit(() -> Serializer.nullable(notNull.get()));
+                });
+            }
+            if (List.class.equals(raw)) {
+                return Metaprogramming.lazyFragment(() -> {
+                    Value<Serializer> elemSerializer = getSerializer(types[0]);
+                    Value<Serializer> notNull = Metaprogramming.emit(() -> Serializer.listSerializer(elemSerializer.get()));
+                    return Metaprogramming.emit(() -> Serializer.nullable(notNull.get()));
+                });
+            }
+            if (Set.class.equals(raw)) {
+                return Metaprogramming.lazyFragment(() -> {
+                    Value<Serializer> elemSerializer = getSerializer(types[0]);
+                    Value<Serializer> notNull = Metaprogramming.emit(() -> Serializer.setSerializer(elemSerializer.get()));
+                    return Metaprogramming.emit(() -> Serializer.nullable(notNull.get()));
+                });
+            }
+        }
+        if (type instanceof Class<?>) {
+            return getSerializer((Class<?>) type);
+        }
+        Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Not supported type " + type);
+        return null;
     }
 
     public static Value<Serializer> getSerializer(Class<?> cls) {
@@ -82,7 +118,7 @@ public class SerializerGenerator {
             for (ClassField cf : classFields) {
                 ReflectField refFd = cf.getRefFd();
                 String propName = refFd.getName();
-                Value<Serializer> fieldSerializer = getSerializer((Class<?>) cf.getFieldType());
+                Value<Serializer> fieldSerializer = getSerializer(cf.getFieldType());
                 Value<Object> javaProp = Metaprogramming.emit(() -> refFd.get(object.get()));
                 Value<JSObject> jsProp = Metaprogramming.emit(() -> fieldSerializer.get().write(javaProp.get()));
                 Metaprogramming.emit(() -> result.get().set(propName, jsProp.get()));

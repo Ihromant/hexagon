@@ -19,7 +19,7 @@ public class ClassField {
     private ClassField(Class<?> cls, Field field) {
         ReflectClass<?> refCl = Metaprogramming.findClass(cls);
         this.refFd = refCl.getDeclaredField(field.getName());
-        this.fieldType = field.getType();
+        this.fieldType = field.getGenericType();
     }
 
     public static List<ClassField> readSerializableFields(Class<?> cls) {

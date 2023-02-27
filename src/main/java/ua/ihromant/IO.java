@@ -17,6 +17,8 @@ import ua.ihromant.serializers.Serializer;
 import ua.ihromant.serializers.SerializerGenerator;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 @CompileTime
 public final class IO {
@@ -93,6 +95,8 @@ public final class IO {
         private int[] f;
         private Integer[] g;
         private Ghi h;
+        private List<String> i;
+        private Map<String, Def> j;
 
         @Override
         public String toString() {
@@ -106,6 +110,8 @@ public final class IO {
                     ", f=" + (f == null ? null : Arrays.toString(f)) +
                     ", g=" + (g == null ? null : Arrays.toString(g)) +
                     ", h=" + h +
+                    ", i=" + i +
+                    ", j=" + j +
                     '}';
         }
     }
@@ -139,6 +145,8 @@ public final class IO {
         a.f = new int[] {1, 2, 3};
         a.g = new Integer[] {1, null, 2, null};
         a.h = c;
+        a.i = List.of("abc", "def", "ghi");
+        a.j = Map.of("a", Def.A, "b", Def.B, "c", Def.C);
         String str = JSON.stringify(IO.javaToJs(a));
         System.out.println(str);
         Abc reParsed = (Abc) IO.jsToJava(JSON.parse(str), Abc.class);

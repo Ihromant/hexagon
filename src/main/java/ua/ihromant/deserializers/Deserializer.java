@@ -3,9 +3,17 @@ package ua.ihromant.deserializers;
 import org.teavm.jso.JSObject;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSBoolean;
+import org.teavm.jso.core.JSMapLike;
 import org.teavm.jso.core.JSNumber;
 import org.teavm.jso.core.JSObjects;
 import org.teavm.jso.core.JSString;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface Deserializer {
     Deserializer BOOLEAN = jso -> jso.<JSBoolean>cast().booleanValue();
@@ -42,6 +50,40 @@ public interface Deserializer {
         }
         return result;
     };
+
+    static Deserializer mapDeserializer(Deserializer keyDeserializer, Deserializer valueDeserializer) {
+        return jso -> {
+            JSMapLike<JSObject> jsMap = jso.cast();
+            Map<Object, Object> result = new HashMap<>();
+            String[] keys = JSObjects.getOwnPropertyNames(jsMap);
+            for (String key : keys) {
+                result.put(keyDeserializer.read(JSString.valueOf(key)), valueDeserializer.read(jsMap.get(key)));
+            }
+            return result;
+        };
+    }
+
+    static Deserializer listDeserializer(Deserializer elemDeserializer) {
+        return jso -> {
+            JSArray<JSObject> jsArr = jso.cast();
+            List<Object> result = new ArrayList<>();
+            for (int i = 0; i < jsArr.getLength(); i++) {
+                result.add(elemDeserializer.read(jsArr.get(i)));
+            }
+            return result;
+        };
+    }
+
+    static Deserializer setDeserializer(Deserializer elemDeserializer) {
+        return jso -> {
+            JSArray<JSObject> jsArr = jso.cast();
+            Set<Object> result = new HashSet<>();
+            for (int i = 0; i < jsArr.getLength(); i++) {
+                result.add(elemDeserializer.read(jsArr.get(i)));
+            }
+            return result;
+        };
+    }
 
     static Deserializer nullable(Deserializer base) {
         return jso -> jso == null || JSObjects.isUndefined(jso) ? null : base.read(jso);

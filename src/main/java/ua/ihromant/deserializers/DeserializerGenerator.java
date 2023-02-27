@@ -12,11 +12,12 @@ import org.teavm.metaprogramming.reflect.ReflectField;
 import org.teavm.metaprogramming.reflect.ReflectMethod;
 import ua.ihromant.cls.ClassField;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @CompileTime
 public class DeserializerGenerator {
@@ -33,6 +34,40 @@ public class DeserializerGenerator {
         definedDeserializers.put(int[].class.getName(), Metaprogramming.lazy(() -> Deserializer.nullable(Deserializer.INT_ARRAY)));
         definedDeserializers.put(boolean[].class.getName(), Metaprogramming.lazy(() -> Deserializer.nullable(Deserializer.BOOLEAN_ARRAY)));
         definedDeserializers.put(double[].class.getName(), Metaprogramming.lazy(() -> Deserializer.nullable(Deserializer.DOUBLE_ARRAY)));
+    }
+
+    public static Value<Deserializer> getDeserializer(Type type) {
+        if (type instanceof ParameterizedType pt) {
+            Type[] types = pt.getActualTypeArguments();
+            Class<?> raw = (Class<?>) pt.getRawType();
+            if (Map.class.equals(raw)) {
+                return Metaprogramming.lazyFragment(() -> {
+                    Value<Deserializer> keyDeserializer = getDeserializer(types[0]);
+                    Value<Deserializer> valueDeserializer = getDeserializer(types[1]);
+                    Value<Deserializer> notNull = Metaprogramming.emit(() -> Deserializer.mapDeserializer(keyDeserializer.get(), valueDeserializer.get()));
+                    return Metaprogramming.emit(() -> Deserializer.nullable(notNull.get()));
+                });
+            }
+            if (List.class.equals(raw)) {
+                return Metaprogramming.lazyFragment(() -> {
+                    Value<Deserializer> elemDeserializer = getDeserializer(types[0]);
+                    Value<Deserializer> notNull = Metaprogramming.emit(() -> Deserializer.listDeserializer(elemDeserializer.get()));
+                    return Metaprogramming.emit(() -> Deserializer.nullable(notNull.get()));
+                });
+            }
+            if (Set.class.equals(raw)) {
+                return Metaprogramming.lazyFragment(() -> {
+                    Value<Deserializer> elemDeserializer = getDeserializer(types[0]);
+                    Value<Deserializer> notNull = Metaprogramming.emit(() -> Deserializer.setDeserializer(elemDeserializer.get()));
+                    return Metaprogramming.emit(() -> Deserializer.nullable(notNull.get()));
+                });
+            }
+        }
+        if (type instanceof Class<?>) {
+            return getDeserializer((Class<?>) type);
+        }
+        Metaprogramming.getDiagnostics().error(Metaprogramming.getLocation(), "Not supported type " + type);
+        return null;
     }
 
     public static Value<Deserializer> getDeserializer(Class<?> cls) {
@@ -98,7 +133,7 @@ public class DeserializerGenerator {
             for (ClassField cf : classFields) {
                 ReflectField refFd = cf.getRefFd();
                 String propName = refFd.getName();
-                Value<Deserializer> fieldDeserializer = getDeserializer((Class<?>) cf.getFieldType());
+                Value<Deserializer> fieldDeserializer = getDeserializer(cf.getFieldType());
                 Value<JSObject> jsProp = Metaprogramming.emit(() -> jso.get().get(propName));
                 Value<Object> javaProp = Metaprogramming.emit(() -> fieldDeserializer.get().read(jsProp.get()));
                 Metaprogramming.emit(() -> refFd.set(jo.get(), javaProp.get()));
