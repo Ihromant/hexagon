@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 @CompileTime
-public final class IO {
-    private IO() {
+public final class Converters {
+    private Converters() {
 
     }
 
@@ -62,7 +62,7 @@ public final class IO {
             Metaprogramming.unsupportedCase();
             return;
         }
-        Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), cls.getName());
+        Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), "Generating serializer for " + cls.getName());
         Value<Serializer> serializer = SerializerGenerator.getSerializer(ClassCache.find(cls.getName()));
         Metaprogramming.exit(() -> serializer.get());
     }
@@ -74,7 +74,7 @@ public final class IO {
             Metaprogramming.unsupportedCase();
             return;
         }
-        Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), cls.getName());
+        Metaprogramming.getDiagnostics().warning(Metaprogramming.getLocation(), "Generating deserializer for " + cls.getName());
         Value<Deserializer> deserializer = DeserializerGenerator.getDeserializer(ClassCache.find(cls.getName()));
         Metaprogramming.exit(() -> deserializer.get());
     }
@@ -117,25 +117,13 @@ public final class IO {
         A, B, C;
     }
 
-    static class Ghi implements IsSerializable {
-        private int a;
-        private int b;
-
-        @Override
-        public String toString() {
-            return "Ghi{" +
-                    "a=" + a +
-                    ", b=" + b +
-                    '}';
-        }
+    record Ghi(int a, int b) implements IsSerializable {
     }
 
     public static void debug() {
         Def b = Def.A;
-        System.out.println(JSON.stringify(IO.javaToJs(b)));
-        Ghi c = new Ghi();
-        c.a = 10;
-        c.b = 20;
+        System.out.println(JSON.stringify(Converters.javaToJs(b)));
+        Ghi c = new Ghi(10, 20);
         Abc a = new Abc();
         a.aa = 20;
         a.e = b;
@@ -144,9 +132,9 @@ public final class IO {
         a.h = c;
         a.i = List.of("abc", "def", "ghi");
         a.j = Map.of("a", Def.A, "b", Def.B, "c", Def.C);
-        String str = JSON.stringify(IO.javaToJs(a));
+        String str = JSON.stringify(Converters.javaToJs(a));
         System.out.println(str);
-        Abc reParsed = (Abc) IO.jsToJava(JSON.parse(str), Abc.class);
+        Abc reParsed = (Abc) Converters.jsToJava(JSON.parse(str), Abc.class);
         System.out.println(reParsed);
         System.out.println(reParsed.f.getClass() + " " + reParsed.f[1]);
         System.out.println(reParsed.g.getClass());

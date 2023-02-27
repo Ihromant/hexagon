@@ -11,9 +11,11 @@ import org.teavm.metaprogramming.Value;
 import org.teavm.metaprogramming.reflect.ReflectField;
 import org.teavm.metaprogramming.reflect.ReflectMethod;
 import ua.ihromant.cls.ClassField;
+import ua.ihromant.cls.RecordField;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,6 +92,9 @@ public class DeserializerGenerator {
         if (cls.isArray()) {
             return buildArrayDeserializer(cls.componentType());
         }
+        if (cls.isRecord()) {
+            return buildRecordDeserializer(cls);
+        }
         return buildObjectDeserializer(cls);
     }
 
@@ -128,8 +133,8 @@ public class DeserializerGenerator {
         ReflectMethod defaultConstructor = refCl.getDeclaredMethod("<init>");
         List<ClassField> classFields = ClassField.readSerializableFields(cls);
         return Metaprogramming.proxy(Deserializer.class, (instance, method, args) -> {
-            Value<Object> jo = Metaprogramming.emit(() -> defaultConstructor.construct());
             @SuppressWarnings("unchecked") Value<JSMapLike<JSObject>> jso = Metaprogramming.emit(() -> (JSMapLike<JSObject>) args[0]);
+            Value<Object> jo = Metaprogramming.emit(() -> defaultConstructor.construct());
             for (ClassField cf : classFields) {
                 ReflectField refFd = cf.getRefFd();
                 String propName = refFd.getName();
@@ -139,6 +144,24 @@ public class DeserializerGenerator {
                 Metaprogramming.emit(() -> refFd.set(jo.get(), javaProp.get()));
             }
             Metaprogramming.exit(() -> jo.get());
+        });
+    }
+
+    private static Value<Deserializer> buildRecordDeserializer(Class<?> cls) {
+        RecordField[] recFds = RecordField.readAccessors(cls);
+        ReflectMethod ctr = RecordField.getConstructor(cls);
+        return Metaprogramming.proxy(Deserializer.class, (instance, method, args) -> {
+            @SuppressWarnings("unchecked") Value<JSMapLike<JSObject>> jso = Metaprogramming.emit(() -> (JSMapLike<JSObject>) args[0]);
+            Value<List<Object>> list = Metaprogramming.emit(() -> new ArrayList<>());
+            for (RecordField rf : recFds) {
+                ReflectMethod rm = rf.getAccessor();
+                String propName = rm.getName();
+                Value<JSObject> jsProp = Metaprogramming.emit(() -> jso.get().get(propName));
+                Value<Deserializer> fieldDeserializer = getDeserializer(rf.getFieldType());
+                Value<Object> javaProp = Metaprogramming.emit(() -> fieldDeserializer.get().read(jsProp.get()));
+                Metaprogramming.emit(() -> list.get().add(javaProp.get()));
+            }
+            Metaprogramming.exit(() -> ctr.construct(list.get().toArray()));
         });
     }
 }

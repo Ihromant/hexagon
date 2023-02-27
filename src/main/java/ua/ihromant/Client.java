@@ -9,6 +9,6 @@ public class Client {
         HTMLElement div = HTMLDocument.current().createElement("div").cast();
         div.setInnerText("Hello, World!");
         document.getBody().appendChild(div);
-        IO.debug();
+        Converters.debug();
     }
 }

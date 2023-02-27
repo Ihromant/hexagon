@@ -9,7 +9,9 @@ import org.teavm.metaprogramming.Metaprogramming;
 import org.teavm.metaprogramming.ReflectClass;
 import org.teavm.metaprogramming.Value;
 import org.teavm.metaprogramming.reflect.ReflectField;
+import org.teavm.metaprogramming.reflect.ReflectMethod;
 import ua.ihromant.cls.ClassField;
+import ua.ihromant.cls.RecordField;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -85,6 +87,9 @@ public class SerializerGenerator {
         if (cls.isArray()) {
             return buildArraySerializer(cls);
         }
+        if (cls.isRecord()) {
+            return buildRecordSerializer(cls);
+        }
         return buildObjectSerializer(cls);
     }
 
@@ -110,11 +115,28 @@ public class SerializerGenerator {
         });
     }
 
+    private static Value<Serializer> buildRecordSerializer(Class<?> cls) {
+        RecordField[] recFds = RecordField.readAccessors(cls);
+        return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
+            Value<Object> object = args[0];
+            Value<JSMapLike<JSObject>> result = Metaprogramming.emit(() -> JSObjects.create());
+            for (RecordField rf : recFds) {
+                ReflectMethod accessor = rf.getAccessor();
+                String propName = accessor.getName();
+                Value<Object> javaProp = Metaprogramming.emit(() -> accessor.invoke(object.get()));
+                Value<Serializer> fieldSerializer = getSerializer(rf.getFieldType());
+                Value<JSObject> jsProp = Metaprogramming.emit(() -> fieldSerializer.get().write(javaProp.get()));
+                Metaprogramming.emit(() -> result.get().set(propName, jsProp.get()));
+            }
+            Metaprogramming.exit(() -> result.get());
+        });
+    }
+
     private static Value<Serializer> buildObjectSerializer(Class<?> cls) {
         List<ClassField> classFields = ClassField.readSerializableFields(cls);
         return Metaprogramming.proxy(Serializer.class, (instance, method, args) -> {
-            Value<JSMapLike<JSObject>> result = Metaprogramming.emit(() -> JSObjects.create());
             Value<Object> object = args[0];
+            Value<JSMapLike<JSObject>> result = Metaprogramming.emit(() -> JSObjects.create());
             for (ClassField cf : classFields) {
                 ReflectField refFd = cf.getRefFd();
                 String propName = refFd.getName();
