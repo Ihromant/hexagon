@@ -52,9 +52,6 @@ public final class IO {
         if (cls.isInterface()) {
             return true;
         }
-        if (cls.isArray()) {
-            return blackList(cls.componentType());
-        }
         return !cls.assignableTo(IsSerializable.class);
     }
 
