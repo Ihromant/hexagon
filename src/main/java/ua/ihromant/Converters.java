@@ -89,7 +89,7 @@ public final class Converters {
         private String c;
         private boolean d;
         private Def e;
-        private int[] f;
+        private int[][] f;
         private Integer[] g;
         private Ghi[][] h;
         private List<String> i;
@@ -104,7 +104,7 @@ public final class Converters {
                     ", c='" + c + '\'' +
                     ", d=" + d +
                     ", e=" + e +
-                    ", f=" + (f == null ? null : Arrays.toString(f)) +
+                    ", f=" + (f == null ? null : Arrays.deepToString(f)) +
                     ", g=" + (g == null ? null : Arrays.toString(g)) +
                     ", h=" + (h == null ? null : Arrays.deepToString(h)) +
                     ", i=" + i +
@@ -127,7 +127,7 @@ public final class Converters {
         Abc a = new Abc();
         a.aa = 20;
         a.e = b;
-        a.f = new int[] {1, 2, 3};
+        a.f = new int[][] {{1, 2, 3}, null, {1, 2}};
         a.g = new Integer[] {1, null, 2, null};
         a.h = new Ghi[][]{{c}};
         a.i = List.of("abc", "def", "ghi");
@@ -136,7 +136,7 @@ public final class Converters {
         System.out.println(str);
         Abc reParsed = (Abc) Converters.jsToJava(JSON.parse(str), Abc.class);
         System.out.println(reParsed);
-        System.out.println(reParsed.f.getClass() + " " + reParsed.f[1]);
+        System.out.println(reParsed.f.getClass() + " " + reParsed.f[1] + " " + Arrays.toString(reParsed.f[0]));
         System.out.println(reParsed.g.getClass());
     }
 }
