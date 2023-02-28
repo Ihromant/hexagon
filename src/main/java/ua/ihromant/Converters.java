@@ -91,7 +91,7 @@ public final class Converters {
         private Def e;
         private int[] f;
         private Integer[] g;
-        private Ghi h;
+        private Ghi[][] h;
         private List<String> i;
         private Map<String, Def> j;
 
@@ -106,7 +106,7 @@ public final class Converters {
                     ", e=" + e +
                     ", f=" + (f == null ? null : Arrays.toString(f)) +
                     ", g=" + (g == null ? null : Arrays.toString(g)) +
-                    ", h=" + h +
+                    ", h=" + (h == null ? null : Arrays.deepToString(h)) +
                     ", i=" + i +
                     ", j=" + j +
                     '}';
@@ -129,7 +129,7 @@ public final class Converters {
         a.e = b;
         a.f = new int[] {1, 2, 3};
         a.g = new Integer[] {1, null, 2, null};
-        a.h = c;
+        a.h = new Ghi[][]{{c}};
         a.i = List.of("abc", "def", "ghi");
         a.j = Map.of("a", Def.A, "b", Def.B, "c", Def.C);
         String str = JSON.stringify(Converters.javaToJs(a));
