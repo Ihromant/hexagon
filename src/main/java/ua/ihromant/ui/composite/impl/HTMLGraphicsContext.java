@@ -82,6 +82,6 @@ public class HTMLGraphicsContext implements GraphicsContext {
 
     @Override
     public void text(String text, int x, int y) {
-        context.strokeText(text, x, y);
+        context.fillText(text, x, y);
     }
 }
