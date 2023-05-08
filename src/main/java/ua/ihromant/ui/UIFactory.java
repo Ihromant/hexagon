@@ -10,6 +10,7 @@ import ua.ihromant.ui.composite.Input;
 import ua.ihromant.ui.composite.Select;
 import ua.ihromant.ui.composite.Text;
 import ua.ihromant.ui.composite.TextButton;
+import ua.ihromant.ui.composite.UIRange;
 
 public interface UIFactory {
     Container root();
@@ -45,4 +46,6 @@ public interface UIFactory {
     Container modal();
 
     ImgData imgData(int width, int height);
+
+    UIRange range();
 }

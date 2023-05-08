@@ -9,7 +9,9 @@ import ua.ihromant.ui.composite.Board;
 import ua.ihromant.ui.composite.Canvas;
 import ua.ihromant.ui.composite.Container;
 import ua.ihromant.ui.composite.GraphicsContext;
+import ua.ihromant.ui.composite.Text;
 import ua.ihromant.ui.composite.TextButton;
+import ua.ihromant.ui.composite.UIRange;
 import ua.ihromant.widget.EdgeWidget;
 import ua.ihromant.widget.PointWidget;
 import ua.ihromant.widget.Widget;
@@ -31,12 +33,20 @@ public class Client {
         board.add(points.position(10, 10));
         points.addEventListener("click", (MouseEvt e) -> {
             Point clicked = fromCrd(new Crd(e.offsetX(), e.offsetY()));
-            Optional<ColorPoint> point = model.find(clicked);
+            Optional<ColorPoint> point = model.findPoint(clicked);
             if (point.isPresent()) {
                 pointWidget.fill(point.get());
                 pointWidget.getContainer().setVisible(true);
+                edgeWidget.getContainer().setVisible(false);
             } else {
                 pointWidget.getContainer().setVisible(false);
+                Optional<ColorEdge> edge = model.findEdge(clicked);
+                if (edge.isPresent()) {
+                    edgeWidget.getContainer().setVisible(true);
+                    edgeWidget.fill(edge.get());
+                } else {
+                    edgeWidget.getContainer().setVisible(false);
+                }
             }
         });
         pointWidget.getUpdate().addEventListener("click", e -> {
@@ -85,6 +95,19 @@ public class Client {
         controls.add(addEdge);
         controls.add(pointWidget.getContainer().setVisible(false));
         cont.add(controls);
+        edgeWidget.getUpdate().setVisible(false);
+        edgeWidget.getDelete().setVisible(true);
+        controls.add(edgeWidget.getContainer().setVisible(false));
+        UIRange range = ui.range().setRange(-50, 50).setValue(0);
+        Text text = ui.text().setText(0);
+        range.setListener(i -> {
+            double angle = 0.1 * i;
+            text.setText(Double.toString(angle));
+            model.setAngle(angle);
+            repaint();
+        });
+        controls.add(range);
+        controls.add(text);
         ui.root().add(cont);
     }
 

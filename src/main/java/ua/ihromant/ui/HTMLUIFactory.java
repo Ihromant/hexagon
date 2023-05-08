@@ -16,6 +16,7 @@ import ua.ihromant.ui.composite.Input;
 import ua.ihromant.ui.composite.Select;
 import ua.ihromant.ui.composite.Text;
 import ua.ihromant.ui.composite.TextButton;
+import ua.ihromant.ui.composite.UIRange;
 import ua.ihromant.ui.composite.impl.HTMLBoard;
 import ua.ihromant.ui.composite.impl.HTMLCanvas;
 import ua.ihromant.ui.composite.impl.HTMLCheckbox;
@@ -26,6 +27,7 @@ import ua.ihromant.ui.composite.impl.HTMLInput;
 import ua.ihromant.ui.composite.impl.HTMLSelect;
 import ua.ihromant.ui.composite.impl.HTMLText;
 import ua.ihromant.ui.composite.impl.HTMLTextButton;
+import ua.ihromant.ui.composite.impl.HTMLUIRange;
 
 public class HTMLUIFactory implements UIFactory {
     private static final Container ROOT = new HTMLContainer(HTMLDocument.current().getBody());
@@ -144,5 +146,12 @@ public class HTMLUIFactory implements UIFactory {
     public ImgData imgData(int width, int height) {
         Uint8ClampedArray arr = Uint8ClampedArray.create(width * height * 4);
         return new HTMLImgData(arr, width);
+    }
+
+    @Override
+    public UIRange range() {
+        HTMLInputElement range = HTMLDocument.current().createElement("input").cast();
+        range.setType("range");
+        return new HTMLUIRange(range);
     }
 }
