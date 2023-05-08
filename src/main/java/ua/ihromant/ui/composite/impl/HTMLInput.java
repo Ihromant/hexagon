@@ -9,6 +9,12 @@ public class HTMLInput extends HTMLComponent<HTMLInputElement> implements Input 
     }
 
     @Override
+    public Input setDisabled(boolean disabled) {
+        getElem().setDisabled(disabled);
+        return this;
+    }
+
+    @Override
     public Input setValue(String text) {
         getElem().setValue(text);
         return this;

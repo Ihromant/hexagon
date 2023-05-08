@@ -11,7 +11,6 @@ public class HTMLText extends HTMLComponent<HTMLElement> implements Text {
 
     public HTMLText(HTMLElement elem) {
         super(elem);
-        setColor(Color.WHITE);
         clear();
     }
 

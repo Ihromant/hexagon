@@ -62,7 +62,7 @@ public class HTMLGraphicsContext implements GraphicsContext {
     public void circle(int x, int y, int r) {
         context.beginPath();
         context.arc(x, y, r, 0, 2 * Math.PI);
-        context.stroke();
+        context.fill();
     }
 
     @Override
