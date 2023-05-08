@@ -8,8 +8,8 @@
   <packaging>war</packaging>
 
   <properties>
-    <java.version>11</java.version>
-    <teavm.version>0.7.0-dev-1169</teavm.version>
+    <java.version>17</java.version>
+    <teavm.version>0.9.0-dev-4</teavm.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -35,6 +35,13 @@
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>3.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.26</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -106,7 +113,7 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.21.v20190926</version>
+        <version>11.0.13</version>
       </plugin>
     </plugins>
   </build>
