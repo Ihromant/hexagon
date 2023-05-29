@@ -1,5 +1,6 @@
 package ua.ihromant.ui.composite.impl;
 
+import lombok.Getter;
 import org.teavm.jso.JSObject;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import org.teavm.jso.canvas.ImageData;
@@ -14,6 +15,7 @@ import ua.ihromant.ui.composite.ImgData;
 import java.util.Arrays;
 
 public class HTMLGraphicsContext implements GraphicsContext {
+    @Getter
     private final CanvasRenderingContext2D context;
 
     public HTMLGraphicsContext(CanvasRenderingContext2D context) {

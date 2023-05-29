@@ -5,6 +5,8 @@ import ua.ihromant.domain.ColorEdge;
 import ua.ihromant.domain.ColorPoint;
 import ua.ihromant.domain.Model;
 import ua.ihromant.domain.Point;
+import ua.ihromant.jso.JSUtils;
+import ua.ihromant.jso.TextMetrics;
 import ua.ihromant.ui.Box;
 import ua.ihromant.ui.HTMLUIFactory;
 import ua.ihromant.ui.LineConf;
@@ -30,6 +32,7 @@ public class Client {
     private static final PointWidget pointWidget = new PointWidget(ui);
     private static final EdgeWidget edgeWidget = new EdgeWidget(ui);
     private static Runnable callback;
+    private static final JSUtils utils = new JSUtils(ui);
 
     public static void main(String[] args) {
         Container cont = ui.horizontal(LineConf.gap(20));
@@ -142,11 +145,24 @@ public class Client {
             context.setFill(cp.getColor());
             Crd crd = toCrd(cp.getPoint());
             context.circle(crd.x(), crd.y(), 2);
+            Crd textCrd = calculateTextCrd(cp, crd);
+            context.text(cp.getName(), textCrd.x(), textCrd.y());
         }
     }
 
     private static Crd toCrd(Point point) {
         return new Crd(point.x() * 20 + 400, 400 - point.y() * 20);
+    }
+
+    private static Crd calculateTextCrd(ColorPoint cp, Crd crd) {
+        double radius = 5;
+        double angle = Math.toRadians(cp.getNameAngle());
+        double sin = Math.sin(angle);
+        double cos = Math.cos(angle);
+        TextMetrics metrics = utils.measureText(cp.getName());
+        double x = cos >= 0 ? crd.x() + radius * cos : crd.x() + radius * cos - metrics.getWidth();
+        double y = sin >= 0 ? crd.y() - radius * sin : crd.y() - radius * sin + metrics.getActualBoundingBoxAscent();
+        return new Crd(x, y);
     }
 
     private static Point fromCrd(Crd crd) {
@@ -190,9 +206,5 @@ public class Client {
         modal.add(widget.getContainer());
         ui.root().add(modal);
         return modal;
-    }
-
-    private record Modal(Container elem) {
-
     }
 }

@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public class Model {
     private static final double distEps = 0.3;
-    private static final double angleEps = 0.05;
+    private static final double angleEps = 0.2;
     private final Map<Integer, ColorPoint> points = new HashMap<>();
     private final Map<Edge, ColorEdge> edges = new HashMap<>();
     private double angle;

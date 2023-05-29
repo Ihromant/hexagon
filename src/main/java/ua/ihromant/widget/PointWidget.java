@@ -19,6 +19,8 @@ public class PointWidget implements Widget {
     private final Input x;
     private final Input y;
     private final ColorSelectionWidget colorSelection;
+    private final Input name;
+    private final Input nameAngle;
     @Getter
     private final TextButton update;
     @Getter
@@ -40,6 +42,14 @@ public class PointWidget implements Widget {
                 ),
                 (colorSelection = new ColorSelectionWidget(ui).setSelected(TextColor.black)).getContainer(),
                 ui.horizontal().add(
+                        name = ui.input(),
+                        ui.text().setText("name")
+                ),
+                ui.horizontal().add(
+                        nameAngle = ui.input(),
+                        ui.text().setText("text angle °")
+                ),
+                ui.horizontal().add(
                         update = ui.txtButton("Update"),
                         (close = ui.txtButton("Close")).setVisible(false)
                 )
@@ -55,13 +65,17 @@ public class PointWidget implements Widget {
         if (cp.getColor() != null) {
             colorSelection.setSelected(cp.getColor());
         }
+        name.setValue(cp.getName());
+        nameAngle.setValue(String.valueOf(cp.getNameAngle()));
     }
 
     public ColorPoint collect() {
         try {
             return new ColorPoint().setId(Integer.parseInt(id.getValue()))
                     .setPoint(new Point(Double.parseDouble(x.getValue()), Double.parseDouble(y.getValue())))
-                    .setColor(colorSelection.getSelected());
+                    .setColor(colorSelection.getSelected())
+                    .setName(name.getValue())
+                    .setNameAngle(Integer.parseInt(nameAngle.getValue()));
         } catch (Exception e) {
             return null;
         }

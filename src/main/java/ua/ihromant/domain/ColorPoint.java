@@ -15,4 +15,6 @@ public class ColorPoint {
     private int id;
     private TextColor color;
     private Point point;
+    private String name;
+    private int nameAngle;
 }
