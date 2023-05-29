@@ -64,7 +64,7 @@ public class Model {
                     continue;
                 }
                 ColorEdge ce = edges.get(Edge.from(from.getKey(), to.getKey()));
-                if (isBetween(from.getValue().getPoint(), to.getValue().getPoint(), clicked)) {
+                if (ce != null && isBetween(from.getValue().getPoint(), to.getValue().getPoint(), clicked)) {
                     return Optional.of(ce);
                 }
             }

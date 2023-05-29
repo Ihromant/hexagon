@@ -1,5 +1,9 @@
 package ua.ihromant.ui;
 
+import java.util.Iterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 public interface HTMLUtil {
     static String convert(Color color) {
         int promille;
@@ -24,5 +28,28 @@ public interface HTMLUtil {
 
     static int round(double a) {
         return (int) (a + Math.signum(a) * 0.5);
+    }
+
+    static Stream<String> split(String s, char ch) {
+        Iterable<String> it = () -> new Iterator<>() {
+            private int idx = s.isEmpty() || s.charAt(0) != ch ? 0 : 1;
+
+            @Override
+            public boolean hasNext() {
+                return idx < s.length();
+            }
+
+            @Override
+            public String next() {
+                int pos = s.indexOf(ch, idx);
+                if (pos < 0) {
+                    pos = s.length();
+                }
+                String res = s.substring(idx, pos);
+                idx = pos + 1;
+                return res;
+            }
+        };
+        return StreamSupport.stream(it.spliterator(), false);
     }
 }

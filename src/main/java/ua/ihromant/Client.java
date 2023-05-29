@@ -20,6 +20,7 @@ import ua.ihromant.ui.composite.Text;
 import ua.ihromant.ui.composite.TextButton;
 import ua.ihromant.ui.composite.UIRange;
 import ua.ihromant.widget.EdgeWidget;
+import ua.ihromant.widget.ExportWidget;
 import ua.ihromant.widget.PointWidget;
 import ua.ihromant.widget.Widget;
 
@@ -107,6 +108,14 @@ public class Client {
         edgeWidget.getUpdate().setVisible(false);
         edgeWidget.getDelete().setVisible(true);
         controls.add(edgeWidget.getContainer().setVisible(false));
+        TextButton export = ui.txtButton("Export");
+        export.addEventListener("click", e -> {
+            ExportWidget ew = new ExportWidget(ui);
+            Container modal = showModal(ew);
+            ew.getClose().addEventListener("click", ev -> modal.detach());
+            ew.getText().setText(getExportedText());
+        });
+        controls.add(export);
         UIRange range = ui.range().setRange(-50, 50).setValue(0);
         Text text = ui.text().setText(0);
         range.setListener(i -> {
@@ -118,6 +127,47 @@ public class Client {
         controls.add(range);
         controls.add(text);
         ui.root().add(cont);
+    }
+
+    private static String getExportedText() {
+        StringBuilder result = new StringBuilder();
+        result.append("\\begin{picture}(800,800)(0,0)\n");
+        result.append("\\linethickness{1pt}\n");
+        for (ColorEdge edge : model.colorEdges()) {
+            ColorPoint from = model.byId(edge.getEdge().from());
+            ColorPoint to = model.byId(edge.getEdge().to());
+            Crd fc = toCrd(from.getPoint());
+            Crd tc = toCrd(to.getPoint());
+            int dx = tc.x() - fc.x();
+            int dy = tc.y() - fc.y();
+            int gcd = gcd(Math.abs(dx), Math.abs(dy));
+            int nX = dx / gcd;
+            int nY = dy / gcd;
+            if (Math.abs(nX) > 6 || Math.abs(nY) > 6) {
+                return "Can't export because segment " + from.getName() + "-" + to.getName() + "\ncan't be paint using LaTeX picture, please adjust points";
+            }
+            result.append("\\put(" + fc.x() + "," + (800 - fc.y()) + ")" +
+                    "{\\color{" + edge.getColor() + "}" +
+                    "\\line(" + nX + "," + -nY + "){"
+                    + Math.max(Math.abs(dx), Math.abs(dy)) + "}}\n");
+        }
+        for (ColorPoint cp : model.colorPoints()) {
+            Crd crd = toCrd(cp.getPoint());
+            Crd textCrd = calculateTextCrd(cp, crd);
+            result.append("\\put(" + crd.x() + "," + (800 - crd.y()) + ")" +
+                    "{\\color{" + cp.getColor() + "}" +
+                    "\\circle*{3}}\n");
+            result.append("\\put(" + textCrd.x() + "," + (800 - textCrd.y()) + "){$" + cp.getName() + "$}\n");
+        }
+        result.append("\\end{picture}");
+        return result.toString();
+    }
+
+    private static int gcd(int n1, int n2) {
+        if (n2 == 0) {
+            return n1;
+        }
+        return gcd(n2, n1 % n2);
     }
 
     private static void executeRepaint() {

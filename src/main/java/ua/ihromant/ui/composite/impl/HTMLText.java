@@ -5,6 +5,8 @@ import ua.ihromant.ui.Color;
 import ua.ihromant.ui.HTMLUtil;
 import ua.ihromant.ui.composite.Text;
 
+import java.util.stream.Collectors;
+
 public class HTMLText extends HTMLComponent<HTMLElement> implements Text {
     private Color color;
     private String value;
@@ -74,7 +76,7 @@ public class HTMLText extends HTMLComponent<HTMLElement> implements Text {
         } else {
             getElem().getStyle().removeProperty("color");
         }
-        getElem().setInnerHTML(value);
+        getElem().setInnerHTML(HTMLUtil.split(value, '\n').collect(Collectors.joining("<br>")));
         return this;
     }
 }

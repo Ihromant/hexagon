@@ -7,7 +7,6 @@ import ua.ihromant.domain.TextColor;
 import ua.ihromant.ui.Border;
 import ua.ihromant.ui.Box;
 import ua.ihromant.ui.Color;
-import ua.ihromant.ui.RGBAColor;
 import ua.ihromant.ui.UIFactory;
 import ua.ihromant.ui.composite.Component;
 import ua.ihromant.ui.composite.Input;
@@ -55,7 +54,12 @@ public class EdgeWidget implements Widget {
 
     public ColorEdge collect() {
         try {
-            return new ColorEdge(Edge.from(Integer.parseInt(fromId.getValue()), Integer.parseInt(toId.getValue())))
+            int from = Integer.parseInt(fromId.getValue());
+            int to = Integer.parseInt(toId.getValue());
+            if (from == to) {
+                throw new Exception();
+            }
+            return new ColorEdge(Edge.from(Math.min(from, to), Math.max(from, to)))
                     .setColor(colorSelection.getSelected());
         } catch (Exception e) {
             return null;
