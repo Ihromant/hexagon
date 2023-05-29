@@ -1,6 +1,7 @@
 package ua.ihromant.ui.composite;
 
 import ua.ihromant.Crd;
+import ua.ihromant.domain.TextColor;
 import ua.ihromant.ui.Border;
 import ua.ihromant.ui.Color;
 
@@ -14,4 +15,6 @@ public interface Look {
     Crd getPosition();
 
     void setBackground(Color background);
+
+    void setBackground(TextColor tc);
 }

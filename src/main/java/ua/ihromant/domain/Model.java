@@ -1,4 +1,4 @@
-package ua.ihromant;
+package ua.ihromant.domain;
 
 import java.util.HashMap;
 import java.util.Map;

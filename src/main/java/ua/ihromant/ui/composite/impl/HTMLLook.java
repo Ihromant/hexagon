@@ -2,6 +2,7 @@ package ua.ihromant.ui.composite.impl;
 
 import org.teavm.jso.dom.html.HTMLElement;
 import ua.ihromant.Crd;
+import ua.ihromant.domain.TextColor;
 import ua.ihromant.ui.Border;
 import ua.ihromant.ui.Color;
 import ua.ihromant.ui.HTMLUtil;
@@ -58,6 +59,15 @@ public class HTMLLook implements Look {
             elem.getStyle().removeProperty("background");
         } else {
             elem.getStyle().setProperty("background", HTMLUtil.convert(background));
+        }
+    }
+
+    @Override
+    public void setBackground(TextColor tc) {
+        if (tc == null) {
+            elem.getStyle().removeProperty("background-color");
+        } else {
+            elem.getStyle().setProperty("background-color", tc.name());
         }
     }
 }

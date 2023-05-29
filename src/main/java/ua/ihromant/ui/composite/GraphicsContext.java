@@ -1,11 +1,16 @@
 package ua.ihromant.ui.composite;
 
+import ua.ihromant.domain.TextColor;
 import ua.ihromant.ui.Color;
 
 public interface GraphicsContext {
     void setFill(Color color);
 
+    void setFill(TextColor color);
+
     void setStroke(Color color);
+
+    void setStroke(TextColor color);
 
     void setLineDash(int[] arr);
 

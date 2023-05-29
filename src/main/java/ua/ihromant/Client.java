@@ -1,5 +1,10 @@
 package ua.ihromant;
 
+import org.teavm.jso.browser.Window;
+import ua.ihromant.domain.ColorEdge;
+import ua.ihromant.domain.ColorPoint;
+import ua.ihromant.domain.Model;
+import ua.ihromant.domain.Point;
 import ua.ihromant.ui.Box;
 import ua.ihromant.ui.HTMLUIFactory;
 import ua.ihromant.ui.LineConf;
@@ -24,6 +29,7 @@ public class Client {
     private static final Canvas points = ui.canvas().pixelSize(800, 800);
     private static final PointWidget pointWidget = new PointWidget(ui);
     private static final EdgeWidget edgeWidget = new EdgeWidget(ui);
+    private static Runnable callback;
 
     public static void main(String[] args) {
         Container cont = ui.horizontal(LineConf.gap(20));
@@ -53,7 +59,7 @@ public class Client {
             ColorPoint cp = pointWidget.collect();
             if (cp != null) {
                 model.addOrReplace(cp);
-                repaint();
+                executeRepaint();
             }
         });
         cont.add(board);
@@ -72,7 +78,7 @@ public class Client {
                 if (result != null) {
                     modal.detach();
                     model.addOrReplace(result);
-                    repaint();
+                    executeRepaint();
                 }
             });
         });
@@ -88,7 +94,7 @@ public class Client {
                 if (result != null) {
                     modal.detach();
                     model.addOrReplace(result);
-                    repaint();
+                    executeRepaint();
                 }
             });
         });
@@ -104,11 +110,21 @@ public class Client {
             double angle = 0.1 * i;
             text.setText(Double.toString(angle));
             model.setAngle(angle);
-            repaint();
+            executeRepaint();
         });
         controls.add(range);
         controls.add(text);
         ui.root().add(cont);
+    }
+
+    private static void executeRepaint() {
+        if (callback == null) {
+            callback = Client::repaint;
+            Window.requestAnimationFrame(d -> {
+                callback.run();
+                callback = null;
+            });
+        }
     }
 
     private static void repaint() {

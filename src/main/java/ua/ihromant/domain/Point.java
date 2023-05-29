@@ -1,4 +1,4 @@
-package ua.ihromant;
+package ua.ihromant.domain;
 
 public record Point(double x, double y) {
     public Point add(Point that) {

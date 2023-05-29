@@ -11,7 +11,7 @@ public class HTMLUIRange extends HTMLComponent<HTMLInputElement> implements UIRa
 
     public HTMLUIRange(HTMLInputElement range) {
         super(range);
-        range.addEventListener("change", e -> onChange());
+        range.addEventListener("input", e -> onChange());
     }
 
     @Override

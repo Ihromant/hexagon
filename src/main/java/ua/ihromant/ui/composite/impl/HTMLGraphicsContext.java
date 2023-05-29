@@ -5,6 +5,7 @@ import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import org.teavm.jso.canvas.ImageData;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSNumber;
+import ua.ihromant.domain.TextColor;
 import ua.ihromant.ui.Color;
 import ua.ihromant.ui.HTMLUtil;
 import ua.ihromant.ui.composite.GraphicsContext;
@@ -25,8 +26,18 @@ public class HTMLGraphicsContext implements GraphicsContext {
     }
 
     @Override
+    public void setFill(TextColor color) {
+        context.setFillStyle(color.name());
+    }
+
+    @Override
     public void setStroke(Color color) {
         context.setStrokeStyle(HTMLUtil.convert(color));
+    }
+
+    @Override
+    public void setStroke(TextColor color) {
+        context.setStrokeStyle(color.name());
     }
 
     @Override

@@ -1,10 +1,9 @@
-package ua.ihromant;
+package ua.ihromant.domain;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import ua.ihromant.ui.Color;
 
 @RequiredArgsConstructor
 @Getter
@@ -12,5 +11,5 @@ import ua.ihromant.ui.Color;
 @Accessors(chain = true)
 public class ColorEdge {
     private final Edge edge;
-    private Color color;
+    private TextColor color;
 }

@@ -1,4 +1,4 @@
-package ua.ihromant;
+package ua.ihromant.domain;
 
 public record Edge(int from, int to) {
     public static Edge from(int from, int to) {

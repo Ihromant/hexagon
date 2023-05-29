@@ -1,8 +1,9 @@
 package ua.ihromant.widget;
 
 import lombok.Getter;
-import ua.ihromant.ColorEdge;
-import ua.ihromant.Edge;
+import ua.ihromant.domain.ColorEdge;
+import ua.ihromant.domain.Edge;
+import ua.ihromant.domain.TextColor;
 import ua.ihromant.ui.Border;
 import ua.ihromant.ui.Box;
 import ua.ihromant.ui.Color;
@@ -17,9 +18,7 @@ public class EdgeWidget implements Widget {
     private final Component container;
     private final Input fromId;
     private final Input toId;
-    private final Input r;
-    private final Input g;
-    private final Input b;
+    private final ColorSelectionWidget colorSelection;
     @Getter
     private final TextButton update;
     @Getter
@@ -37,18 +36,7 @@ public class EdgeWidget implements Widget {
                         toId = ui.input(),
                         ui.text().setText("To")
                 ),
-                ui.horizontal().add(
-                        r = ui.input(),
-                        ui.text().setText("r")
-                ),
-                ui.horizontal().add(
-                        g = ui.input(),
-                        ui.text().setText("g")
-                ),
-                ui.horizontal().add(
-                        b = ui.input(),
-                        ui.text().setText("b")
-                ),
+                (colorSelection = new ColorSelectionWidget(ui)).setSelected(TextColor.black).getContainer(),
                 ui.horizontal().add(
                         update = ui.txtButton("Update"),
                         (close = ui.txtButton("Close")).setVisible(false),
@@ -61,16 +49,14 @@ public class EdgeWidget implements Widget {
         fromId.setValue(Integer.toString(ce.getEdge().from())).setDisabled(true);
         toId.setValue(Integer.toString(ce.getEdge().to())).setDisabled(true);
         if (ce.getColor() != null) {
-            r.setValue(Integer.toString(ce.getColor().r()));
-            g.setValue(Integer.toString(ce.getColor().g()));
-            b.setValue(Integer.toString(ce.getColor().b()));
+            colorSelection.setSelected(ce.getColor());
         }
     }
 
     public ColorEdge collect() {
         try {
             return new ColorEdge(Edge.from(Integer.parseInt(fromId.getValue()), Integer.parseInt(toId.getValue())))
-                    .setColor(new RGBAColor(Integer.parseInt(r.getValue()), Integer.parseInt(g.getValue()), Integer.parseInt(b.getValue())));
+                    .setColor(colorSelection.getSelected());
         } catch (Exception e) {
             return null;
         }
