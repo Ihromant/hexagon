@@ -5,8 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class Model {
-    private static final double distEps = 0.3;
-    private static final double angleEps = 0.2;
+    private static final double distEps = 0.2;
     private final Map<Integer, ColorPoint> points = new HashMap<>();
     private final Map<Edge, ColorEdge> edges = new HashMap<>();
     private double angle;
@@ -50,11 +49,8 @@ public class Model {
         if (absF < distEps || absT < distEps) {
             return false;
         }
-        double sin = fromV.vector(toV) / absF / absT;
-        if (Math.abs(sin) > angleEps) {
-            return false;
-        }
-        return fromV.scalar(toV) <= 0;
+        Point line = end.subtract(begin);
+        return fromV.scalar(toV) <= 0 && Math.abs(line.vector(toV) / line.abs()) < distEps;
     }
 
     public Optional<ColorEdge> findEdge(Point clicked) {
