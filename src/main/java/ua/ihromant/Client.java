@@ -143,21 +143,13 @@ public class Client {
             int gcd = gcd(Math.abs(dx), Math.abs(dy));
             int nX = dx / gcd;
             int nY = dy / gcd;
-            if (Math.abs(nX) > 6 || Math.abs(nY) > 6) {
-                return "Can't export because segment " + from.getName() + "-" + to.getName() + "\ncan't be paint using LaTeX picture, please adjust points";
-            }
-            result.append("\\put(" + fc.x() + "," + (800 - fc.y()) + ")" +
-                    "{\\color{" + edge.getColor() + "}" +
-                    "\\line(" + nX + "," + -nY + "){"
-                    + Math.max(Math.abs(dx), Math.abs(dy)) + "}}\n");
+            result.append("\\put(").append(fc.x()).append(",").append(800 - fc.y()).append(")").append("{\\color{").append(edge.getColor()).append("}").append("\\line(").append(nX).append(",").append(-nY).append("){").append(Math.max(Math.abs(dx), Math.abs(dy))).append("}}\n");
         }
         for (ColorPoint cp : model.colorPoints()) {
             Crd crd = toCrd(cp.getPoint());
             Crd textCrd = calculateTextCrd(cp, crd);
-            result.append("\\put(" + crd.x() + "," + (800 - crd.y()) + ")" +
-                    "{\\color{" + cp.getColor() + "}" +
-                    "\\circle*{3}}\n");
-            result.append("\\put(" + textCrd.x() + "," + (800 - textCrd.y()) + "){$" + cp.getName() + "$}\n");
+            result.append("\\put(").append(crd.x()).append(",").append(800 - crd.y()).append(")").append("{\\color{").append(cp.getColor()).append("}").append("\\circle*{3}}\n");
+            result.append("\\put(").append(textCrd.x()).append(",").append(800 - textCrd.y()).append("){$").append(cp.getName()).append("$}\n");
         }
         result.append("\\end{picture}");
         return result.toString();
