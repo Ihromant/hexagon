@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.teavm.jso.JSObject;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import org.teavm.jso.canvas.ImageData;
+import org.teavm.jso.canvas.TextMetrics;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSNumber;
 import ua.ihromant.domain.TextColor;
@@ -96,5 +97,10 @@ public class HTMLGraphicsContext implements GraphicsContext {
     @Override
     public void text(String text, int x, int y) {
         context.fillText(text, x, y);
+    }
+
+    @Override
+    public TextMetrics measureText(String text) {
+        return context.measureText(text);
     }
 }

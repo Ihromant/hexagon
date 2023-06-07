@@ -1,5 +1,6 @@
 package ua.ihromant.ui.composite;
 
+import org.teavm.jso.canvas.TextMetrics;
 import ua.ihromant.domain.TextColor;
 import ua.ihromant.ui.Color;
 
@@ -29,4 +30,6 @@ public interface GraphicsContext {
     void clearRect(int x, int y, int w, int h);
 
     void text(String text, int x, int y);
+
+    TextMetrics measureText(String text);
 }

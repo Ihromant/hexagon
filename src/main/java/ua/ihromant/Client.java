@@ -1,12 +1,11 @@
 package ua.ihromant;
 
 import org.teavm.jso.browser.Window;
+import org.teavm.jso.canvas.TextMetrics;
 import ua.ihromant.domain.ColorEdge;
 import ua.ihromant.domain.ColorPoint;
 import ua.ihromant.domain.Model;
 import ua.ihromant.domain.Point;
-import ua.ihromant.jso.JSUtils;
-import ua.ihromant.jso.TextMetrics;
 import ua.ihromant.ui.Box;
 import ua.ihromant.ui.HTMLUIFactory;
 import ua.ihromant.ui.LineConf;
@@ -33,7 +32,7 @@ public class Client {
     private static final PointWidget pointWidget = new PointWidget(ui);
     private static final EdgeWidget edgeWidget = new EdgeWidget(ui);
     private static Runnable callback;
-    private static final JSUtils utils = new JSUtils(ui);
+    private static final GraphicsContext context = ui.canvas().getContext();
 
     public static void main(String[] args) {
         Container cont = ui.horizontal(LineConf.gap(20));
@@ -201,7 +200,7 @@ public class Client {
         double angle = Math.toRadians(cp.getNameAngle());
         double sin = Math.sin(angle);
         double cos = Math.cos(angle);
-        TextMetrics metrics = utils.measureText(cp.getName());
+        TextMetrics metrics = context.measureText(cp.getName());
         double x = cos >= 0 ? crd.x() + radius * cos : crd.x() + radius * cos - metrics.getWidth();
         double y = sin >= 0 ? crd.y() - radius * sin : crd.y() - radius * sin + metrics.getActualBoundingBoxAscent();
         return new Crd(x, y);
