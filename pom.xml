@@ -9,7 +9,7 @@
 
   <properties>
     <java.version>21</java.version>
-    <teavm.version>0.9.0-dev-14</teavm.version>
+    <teavm.version>0.10.0-dev-2</teavm.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -106,7 +106,7 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.21.v20190926</version>
+        <version>11.0.18</version>
       </plugin>
     </plugins>
   </build>
