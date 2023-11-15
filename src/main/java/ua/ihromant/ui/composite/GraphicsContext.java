@@ -1,6 +1,7 @@
 package ua.ihromant.ui.composite;
 
 import org.teavm.jso.canvas.TextMetrics;
+import ua.ihromant.domain.Point;
 import ua.ihromant.domain.TextColor;
 import ua.ihromant.ui.Color;
 
@@ -21,7 +22,9 @@ public interface GraphicsContext {
 
     void vLine(int x, int fy, int ty);
 
-    void circle(int x, int y, int r);
+    void circle(double x, double y, int r);
+
+    void bezier(Point p0, Point p1, Point p2, Point p3);
 
     void fillRect(int x, int y, int w, int h);
 

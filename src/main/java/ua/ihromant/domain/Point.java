@@ -9,6 +9,10 @@ public record Point(double x, double y) {
         return new Point(this.x - that.x, this.y - that.y);
     }
 
+    public Point mul(double scalar) {
+        return new Point(this.x * scalar, this.y * scalar);
+    }
+
     public double dist(Point that) {
         return Math.hypot(that.x - this.x, that.y - this.y);
     }

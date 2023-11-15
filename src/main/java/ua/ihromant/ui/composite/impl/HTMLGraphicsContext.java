@@ -1,12 +1,12 @@
 package ua.ihromant.ui.composite.impl;
 
-import lombok.Getter;
 import org.teavm.jso.JSObject;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import org.teavm.jso.canvas.ImageData;
 import org.teavm.jso.canvas.TextMetrics;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSNumber;
+import ua.ihromant.domain.Point;
 import ua.ihromant.domain.TextColor;
 import ua.ihromant.ui.Color;
 import ua.ihromant.ui.HTMLUtil;
@@ -15,14 +15,7 @@ import ua.ihromant.ui.composite.ImgData;
 
 import java.util.Arrays;
 
-public class HTMLGraphicsContext implements GraphicsContext {
-    @Getter
-    private final CanvasRenderingContext2D context;
-
-    public HTMLGraphicsContext(CanvasRenderingContext2D context) {
-        this.context = context;
-    }
-
+public record HTMLGraphicsContext(CanvasRenderingContext2D context) implements GraphicsContext {
     @Override
     public void setFill(Color color) {
         context.setFillStyle(HTMLUtil.convert(color));
@@ -73,10 +66,18 @@ public class HTMLGraphicsContext implements GraphicsContext {
     }
 
     @Override
-    public void circle(int x, int y, int r) {
+    public void circle(double x, double y, int r) {
         context.beginPath();
         context.arc(x, y, r, 0, 2 * Math.PI);
         context.fill();
+    }
+
+    @Override
+    public void bezier(Point p0, Point p1, Point p2, Point p3) {
+        context.beginPath();
+        context.moveTo(p0.x(), p0.y());
+        context.bezierCurveTo(p1.x(), p1.y(), p2.x(), p2.y(), p3.x(), p3.y());
+        context.stroke();
     }
 
     @Override
