@@ -2,7 +2,7 @@ package ua.ihromant;
 
 import ua.ihromant.domain.LineData;
 import ua.ihromant.domain.Point;
-import ua.ihromant.domain.TextColor;
+import ua.ihromant.domain.STS13Visualizer;
 import ua.ihromant.domain.UnitalVisualizer;
 import ua.ihromant.domain.Visualizer;
 import ua.ihromant.ui.Box;
@@ -10,11 +10,13 @@ import ua.ihromant.ui.Color;
 import ua.ihromant.ui.HTMLUIFactory;
 import ua.ihromant.ui.LineConf;
 import ua.ihromant.ui.MouseEvt;
+import ua.ihromant.ui.SelectEvent;
 import ua.ihromant.ui.UIFactory;
 import ua.ihromant.ui.composite.Canvas;
 import ua.ihromant.ui.composite.Container;
 import ua.ihromant.ui.composite.GraphicsContext;
-import ua.ihromant.widget.ColorSelectionWidget;
+import ua.ihromant.ui.composite.Select;
+import ua.ihromant.ui.composite.SelectOption;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -25,12 +27,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Client {
+    private static final Map<String, Visualizer> visualizers = Map.of("unital", new UnitalVisualizer(),
+            "sts13fst", STS13Visualizer.first,
+            "sts13snd", STS13Visualizer.second);
     private static final UIFactory ui = new HTMLUIFactory();
     private static final Canvas canvas = ui.canvas().pixelSize(1000, 800);
-    private static final ColorSelectionWidget colorWidget = new ColorSelectionWidget(ui).setSelected(TextColor.black);
+    private static final Select select = ui.select();
     private static final GraphicsContext context = canvas.getContext();
-    private static final Visualizer visualizer = new UnitalVisualizer();
-    private static final LineData[] model = visualizer.model();
+    private static Visualizer visualizer = new UnitalVisualizer();
+    private static LineData[] model = visualizer.model();
     private static Integer selected;
 
     public static void main(String[] args) {
@@ -61,7 +66,15 @@ public class Client {
         });
         Container controls = ui.vertical(LineConf.gap(10));
         controls.box(Box.padding(10));
-        controls.add(colorWidget.getContainer());
+        visualizers.forEach((k, v) -> select.addOption(new SelectOption(k, k)));
+        select.setSelected("unital");
+        controls.add(select);
+        select.addEventListener("select", (SelectEvent e) -> {
+            visualizer = visualizers.get(e.value());
+            model = visualizer.model();
+            selected = null;
+            repaint();
+        });
         cont.add(controls);
         ui.root().add(cont);
         repaint();

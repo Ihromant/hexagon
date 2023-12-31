@@ -26,7 +26,7 @@ public interface Visualizer {
     }
 
     default LineData[] model() {
-        return Arrays.stream(F9Point.generateUnital()).map(bs -> new LineData(bs,
+        return Arrays.stream(lines()).map(bs -> new LineData(bs,
                 TextColor.values()[ThreadLocalRandom.current().nextInt(TextColor.values().length - 2)], bezier(bs))).toArray(LineData[]::new);
     }
 
