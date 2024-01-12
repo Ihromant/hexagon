@@ -1,5 +1,6 @@
 package ua.ihromant;
 
+import ua.ihromant.domain.DennistonArcVisualizer;
 import ua.ihromant.domain.LineData;
 import ua.ihromant.domain.Point;
 import ua.ihromant.domain.STS13Visualizer;
@@ -29,7 +30,8 @@ import java.util.stream.IntStream;
 public class Client {
     private static final Map<String, Visualizer> visualizers = Map.of("unital", new UnitalVisualizer(),
             "sts13fst", STS13Visualizer.first,
-            "sts13snd", STS13Visualizer.second);
+            "sts13snd", STS13Visualizer.second,
+            "denniston", new DennistonArcVisualizer());
     private static final UIFactory ui = new HTMLUIFactory();
     private static final Canvas canvas = ui.canvas().pixelSize(1000, 800);
     private static final Select select = ui.select();
