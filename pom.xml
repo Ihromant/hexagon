@@ -9,7 +9,7 @@
 
   <properties>
     <java.version>21</java.version>
-    <teavm.version>0.10.0-dev-4</teavm.version>
+    <teavm.version>0.10.0-dev-12</teavm.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
