@@ -1,5 +1,7 @@
 package ua.ihromant;
 
+import ua.ihromant.domain.AntiMoufangVisualizer;
+import ua.ihromant.domain.AntiMoufangVisualizer1;
 import ua.ihromant.domain.DennistonArcVisualizer;
 import ua.ihromant.domain.LineData;
 import ua.ihromant.domain.Point;
@@ -31,7 +33,9 @@ public class Client {
     private static final Map<String, Visualizer> visualizers = Map.of("unital", new UnitalVisualizer(),
             "sts13fst", STS13Visualizer.first,
             "sts13snd", STS13Visualizer.second,
-            "denniston", new DennistonArcVisualizer());
+            "denniston", new DennistonArcVisualizer(),
+            "notMoufang", new AntiMoufangVisualizer(),
+            "notMoufang1", new AntiMoufangVisualizer1());
     private static final UIFactory ui = new HTMLUIFactory();
     private static final Canvas canvas = ui.canvas().pixelSize(1000, 800);
     private static final Select select = ui.select();
